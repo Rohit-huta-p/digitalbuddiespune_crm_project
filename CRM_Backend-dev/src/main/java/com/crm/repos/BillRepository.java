@@ -1,0 +1,37 @@
+package com.crm.repos;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.crm.model.Bill;
+
+public interface BillRepository extends JpaRepository<Bill, Long> {
+
+    List<Bill> findByBillDueDate(LocalDate billDueDate);
+
+    List<Bill> findAllByOrderByBillingDateDesc();
+
+    @Query("SELECT b FROM Bill b WHERE "
+            + "(:email IS NULL OR b.email = :email) AND "
+            + "(:phno IS NULL OR b.phno = :phno) AND "
+            + "(:isPending IS NULL OR b.isPending = :isPending) AND "
+            + "(:companyId IS NULL OR b.companyId = :companyId) "
+            + "ORDER BY b.billingDate DESC")
+    Page<Bill> findByFilters(
+            @Param("email") String email,
+            @Param("phno") String phno,
+            @Param("isPending") Boolean isPending,
+            @Param("companyId") Long companyId,
+            Pageable pageable
+    );
+
+    // ✅ New method to check invoice number exists
+    Optional<Bill> findByInvoiceNumber(String invoiceNumber);
+}

@@ -1,0 +1,29 @@
+Employee-Management
+1)addEmployee:
+	- name:character space not allowed (resolved)
+	- phno: it takes phone number start with 1
+	- for duplicate entry's it gives 500 internal server error (resolved)
+	- role : it take any number it should with in range of (1-3) (resolved)
+2)updateEmployee:
+	- name:characterspace not allowed (resolved)
+	- phno: it takes phone number start with 1
+	- role : it take any number it should with in range of (1-3) (resolveD)
+
+Message-crud
+1)start-chat:
+	- one user can't chat with multiple user 
+
+Location-crud
+1)addLocation :
+	-in response it return the location object
+2)updateLocation :
+	-in response it return the location object
+	-if employee not found in return nothing in response
+3)getById :
+	-if employee not found in return nothing in response
+4)delete :
+	- if employee not found we get response 200 ok 
+
+TaskManagement crud
+1)deleteTask :
+	- if i id is not present in table then also get suucess response

@@ -1,0 +1,213 @@
+
+const data: Task[] = [
+  {
+    status: "Open",
+    name: "Purchase office supplies",
+    priority: "High",
+    project: "Operations",
+    deadline: feb4th,
+  },
+  {
+    status: "In Progress",
+    name: "Develop marketing strategy",
+    priority: "Medium",
+    project: "Marketing",
+    deadline: today,
+  },
+  {
+    status: "Closed",
+    name: "Update software systems",
+    priority: "Low",
+    project: "IT",
+    deadline: today,
+  },
+  {
+    status: "In Progress",
+    name: "Design new product packaging",
+    priority: "High",
+    project: "Design",
+    deadline: feb4th,
+  },
+  {
+    status: "Open",
+    name: "Conduct employee training",
+    priority: "Low",
+    project: "Human Resources",
+    deadline: "2025-02-15",
+  },
+  {
+    status: "In Progress",
+    name: "Enhance customer support portal",
+    priority: "Medium",
+    project: "Customer Service",
+    deadline: "2025-02-10",
+  },
+];
+
+
+export const columns = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Status
+        <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const status = row.getValue("status");
+      let Icon;
+      switch (status) {
+        case "Open":
+          Icon = Pencil;
+          break;
+        case "In Progress":
+          Icon = Loader;
+          break;
+        case "Closed":
+          Icon = Check;
+          break;
+        default:
+          throw new Error(`Unknown status: ${status}`);
+      }
+      return (
+        <span className="flex items-center gap-2">
+          <Icon className="h-4 w-4" aria-label={status} />
+          <span className="text-sm">{status}</span>
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Name
+        <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="pl-5">{row.getValue("name")}</div>,
+  },
+  {
+    accessorKey: "project",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Project Name
+        <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="pl-5">{row.getValue("project")}</div>,
+  },
+  {
+    accessorKey: "priority",
+    header: () => <div className="text-left">Priority</div>,
+    cell: ({ row }) => {
+      const priority = row.getValue("priority");
+      const priorityStyles = {
+        High: "bg-red-500 dark:bg-red-600 text-white font-bold",
+        Medium: "bg-yellow-500 dark:bg-yellow-600 text-white font-bold",
+        Low: "bg-green-500 dark:bg-green-600 text-white font-bold",
+      };
+
+      return (
+        <div
+          className={`text-left font-medium px-2 py-1 rounded-full ${
+            priorityStyles[priority] || "bg-gray-500 text-white"
+          }`}
+        >
+          {priority}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "deadline",
+    header: () => <div className="text-left">Deadline</div>,
+    cell: ({ row }) => {
+      dayjs.extend(relativeTime);
+      dayjs.extend(isSameOrBefore);
+
+      const deadline = row.getValue("deadline");
+
+      const deadlineDate = dayjs(deadline, "YYYY-MM-DD", true);
+      const today = dayjs();
+
+      const isToday = today.isSame(deadlineDate, "day");
+
+      const timeRemaining = deadlineDate.isValid()
+        ? deadlineDate.from(today, true)
+        : "Invalid date";
+
+      console.log({ deadline, isToday, timeRemaining });
+
+      return (
+        <div
+          className={`text-left font-medium ${isToday ? "text-red-500" : ""}`}
+        >
+          {isToday ? "Today" : `${timeRemaining} remaining`}
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: () => <div className="text-left">Actions</div>,
+    cell: ({ row }) => {
+      const payment = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer">
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-500 pr-1 cursor-pointer">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];

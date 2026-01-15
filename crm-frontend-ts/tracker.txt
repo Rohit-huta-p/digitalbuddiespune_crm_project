@@ -1,0 +1,25 @@
+Files modified to add companyId:
+
+1. src/app/api/(tasks)/create-tasks/route.ts
+2. src/app/api/(tasks)/delete-tasks/route.ts
+3. src/app/api/(tasks)/get-all-tasks/route.ts
+4. src/app/api/(tasks)/update-tasks/route.ts
+5. src/app/api/attendance/route.ts
+6. src/app/api/billing/route.ts
+7. src/app/api/create-employee/route.ts
+8. src/app/api/current-user/route.ts
+9. src/app/api/employees/route.ts
+10. src/app/api/login/route.ts
+11. src/app/api/logout/route.ts
+12. src/app/api/project-group/create/route.ts
+13. src/app/api/project-group/delete/route.ts
+14. src/app/api/project-group/get-all/route.ts
+15. src/app/api/project-group/get-by-id/route.ts
+16. src/app/api/project-group/get-task-employees/route.ts
+17. src/app/api/project-group/get-tasks/route.ts
+18. src/app/api/project-group/mark-project-status/route.ts
+19. src/app/api/project-group/tasks/assing-to-yourself/route.ts
+20. src/app/api/project-group/tasks/delete/route.ts
+21. src/app/api/project-group/tasks/schedule/route.ts
+22. src/app/api/project-group/tasks/update/route.ts
+23. src/app/api/projects/create/route.ts
