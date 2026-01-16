@@ -15,7 +15,7 @@ export default function AddEmployeeForm() {
 
   const [formData, setFormData] = useState({
     name: "",
-    phno: "",
+    mobile: "",
     email: "",
     role: "", // 1 = Admin, 2 = HR, 3 = Employee
     password: "",
@@ -51,6 +51,7 @@ export default function AddEmployeeForm() {
     try {
       const payload = {
         ...formData,
+        role: Number(formData.role), // convert string to number for API
         monthlySalary: String(Math.trunc(Number(formData.monthlySalary || 0))), // integer only
         ...(formData.role === "2" && formData.hrId?.trim() ? { hrId: formData.hrId.trim() } : { hrId: undefined }),
       };
@@ -107,7 +108,7 @@ export default function AddEmployeeForm() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="phno">Phone Number</Label>
-                  <Input id="phno" name="phno" value={formData.phno} onChange={handleChange} required />
+                  <Input id="phno" name="phno" value={formData.mobile} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-1.5">

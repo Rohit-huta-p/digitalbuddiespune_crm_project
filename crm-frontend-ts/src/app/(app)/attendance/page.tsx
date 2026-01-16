@@ -21,6 +21,7 @@ const AttendancePage = () => {
   const [workedTime, setWorkedTime] = useState<string | null>(null);
   const [logoutTime, setLogoutTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  if(loading){}
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   useEffect(() => {
