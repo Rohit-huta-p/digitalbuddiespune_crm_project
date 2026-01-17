@@ -107,8 +107,8 @@ export default function AddEmployeeForm() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="phno">Phone Number</Label>
-                  <Input id="phno" name="phno" value={formData.mobile} onChange={handleChange} required />
+                  <Label htmlFor="mobile">Phone Number</Label>
+                  <Input id="mobile" name="mobile" value={formData.mobile} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-1.5">
