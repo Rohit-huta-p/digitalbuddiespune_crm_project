@@ -41,16 +41,16 @@ export async function POST(request: Request) {
     console.log("CREATE EMPLOYEE", responseData);
 
     // !Error handling
-    if (responseData.errors) {
+    if (responseData?.errors?.length > 0) {
       throw {
         title: "Employee Creation Failed",
-        message: responseData.errors[0].message,
-        status: responseData.errors[0].code || 400,
+        message: responseData.errors[0]?.message || "Unknown error occurred",
+        status: responseData.errors[0]?.code || 400,
       };
     }
 
     // *If no errors then proceed
-    const { message } = responseData.attributes;
+    const message = responseData?.attributes?.message || responseData?.message || "Employee created successfully";
     console.log("CREATE EMPLOYEE", message);
 
     // Return response
