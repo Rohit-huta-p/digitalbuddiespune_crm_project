@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-export default function UpdateLeadStatusPage() {
+export default function UpdateLeadStatusPage({ defaultLeadId }: { defaultLeadId?: number }) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    leadId: "",
+    leadId: defaultLeadId ? String(defaultLeadId) : "",
     status: "CONTACTED",
   });
+
+  useEffect(() => {
+    if (defaultLeadId) setForm((f) => ({ ...f, leadId: String(defaultLeadId) }));
+  }, [defaultLeadId]);
 
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -48,7 +52,7 @@ export default function UpdateLeadStatusPage() {
   };
 
   return (
-    <div className="w-full flex justify-center mt-10 px-4">
+    <div className="w-full flex justify-center mt-40 px-4">
       <Card className="w-full max-w-2xl shadow-md border rounded-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-gray-800">

@@ -1,5 +1,5 @@
 "use client";
-
+// app/(app)/client/page.tsx
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -59,7 +59,7 @@ export default function ClientsPage() {
     try {
       const res = await fetch("/api/get-all-clients", { method: "POST" });
       const data = await res.json();
-      setClients(data.clients || []);
+      setClients(data.data || []);
     } catch (err) {
       toast.error("Failed to load clients");
       console.error(err);
@@ -70,15 +70,8 @@ export default function ClientsPage() {
     if (!selectedClient) return;
 
     try {
-      const res = await fetch("/api/delete-client", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          clientId: selectedClient.clientId.toString(),
-          companyId: "1",
-        }),
+      const res = await fetch(`/api/delete-client?clientId=${selectedClient.clientId}`, {
+        method: "DELETE",
       });
 
       const result = await res.json();
@@ -297,8 +290,8 @@ export default function ClientsPage() {
                         proj.status === "open"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                           : proj.status === "pending"
-                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
-                          : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                            : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                       )}
                     >
                       {proj.status.charAt(0).toUpperCase() +

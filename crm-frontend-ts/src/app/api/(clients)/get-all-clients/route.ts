@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   const cookieStore = cookies();
   const token = cookieStore.get("token")?.value;
   const userId = cookieStore.get("id")?.value;
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     );
 
     const responseData = await backendResponse.json();
-    
+
     console.log("Get all clients response:", responseData);
 
     if (!backendResponse.ok || responseData.errors) {

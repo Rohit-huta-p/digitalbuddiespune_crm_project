@@ -1,16 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-export default function ViewFollowUpsPage() {
+export default function ViewFollowUpsPage({ defaultLeadId }: { defaultLeadId?: number }) {
   const [loading, setLoading] = useState(false);
-  const [leadId, setLeadId] = useState("");
+  const [leadId, setLeadId] = useState(defaultLeadId ? String(defaultLeadId) : "");
   const [followUps, setFollowUps] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (defaultLeadId) {
+      setLeadId(String(defaultLeadId));
+      handleLoad();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultLeadId]);
 
   const handleLoad = async () => {
     if (!leadId) {
@@ -44,7 +52,7 @@ export default function ViewFollowUpsPage() {
   };
 
   return (
-    <div className="w-full flex justify-center mt-10 px-4">
+    <div className="w-full flex justify-center mt-40 px-4">
       <Card className="w-full max-w-4xl shadow-md border rounded-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-gray-800">

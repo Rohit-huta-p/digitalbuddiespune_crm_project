@@ -20,6 +20,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const requestBody = { ...body, companyId: "1" };
 
+    if (requestBody.deadlineTimestamp) {
+      requestBody.deadlineTimestamp = new Date(requestBody.deadlineTimestamp)
+        .toISOString()
+        .slice(0, 19);
+    }
+
     /* 
         TODO: Add type here
         const body: UpdateTaskRequest = await request.json();
@@ -39,24 +45,15 @@ export async function POST(request: Request) {
 
     const responseData = await backendResponse.json();
 
-    console.log(responseData);
+    console.log("Backend /task/update response:", backendResponse.status, responseData);
 
-    if (responseData.errors) {
-      throw {
-        title: "Update Task failed",
-        message: responseData.errors,
-        status: 400,
-      };
+    // If backend returned non-OK or errors, forward the full response and status
+    if (!backendResponse.ok || responseData?.errors) {
+      return NextResponse.json(responseData, { status: backendResponse.status || 500 });
     }
 
-    const { message } = responseData.attributes;
-
-    const response = NextResponse.json({
-      success: true,
-      message,
-    });
-
-    return response;
+    // Forward backend attributes (includes message) and status to client for transparency
+    return NextResponse.json(responseData, { status: backendResponse.status });
   } catch (error: any) {
     console.error("Update Task API error:", error);
     return NextResponse.json({ error }, { status: error?.status || 500 });

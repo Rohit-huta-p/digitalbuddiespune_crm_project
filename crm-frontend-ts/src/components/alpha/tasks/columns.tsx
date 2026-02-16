@@ -1,26 +1,9 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
 
-export type Task = {
-  id: number;
-  taskName: string;
-  description: string;
-  status: string;
-  priority: string | null;
-  assignedBy: number;
-  assignedToEmployeeId: number[];
-  deadlineTimestamp: string;
-};
+import { Task } from "@/components/tasks/data/schema";
+export type { Task };
+import { ActionCell } from "./action-cell";
 
 const columnHelper = createColumnHelper<Task>();
 
@@ -33,8 +16,8 @@ export const getColumns = () => [
           table.getIsAllPageRowsSelected()
             ? true
             : table.getIsSomePageRowsSelected()
-            ? "indeterminate"
-            : false
+              ? "indeterminate"
+              : false
         }
         onCheckedChange={() => table.toggleAllPageRowsSelected()}
         aria-label="Select all rows"
@@ -108,13 +91,12 @@ export const getColumns = () => [
         | "closed";
       return (
         <div
-          className={`px-2 py-1 rounded-full text-sm font-medium text-center ${
-            status === "open"
-              ? "bg-blue-900/25 text-blue-300 border border-blue-900"
-              : status === "pending"
+          className={`px-2 py-1 rounded-full text-sm font-medium text-center ${status === "open"
+            ? "bg-blue-900/25 text-blue-300 border border-blue-900"
+            : status === "pending"
               ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
               : "bg-green-900/25 text-green-300 border border-green-900"
-          }`}
+            }`}
         >
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </div>
@@ -128,17 +110,36 @@ export const getColumns = () => [
       const priority = info.getValue() ?? ("-" as "high" | "medium" | "low");
       return (
         <div
-          className={`px-2 py-1 rounded-full text-sm font-medium text-center ${
-            priority === "high"
-              ? "bg-red-900/25 text-red-500 font-bold border border-red-900"
-              : priority === "medium"
+          className={`px-2 py-1 rounded-full text-sm font-medium text-center ${priority === "high"
+            ? "bg-red-900/25 text-red-500 font-bold border border-red-900"
+            : priority === "medium"
               ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
               : "bg-green-900/25 text-green-300 border border-green-900"
-          }`}
+            }`}
         >
           {priority === "-"
             ? "-"
             : priority.charAt(0).toUpperCase() + priority.slice(1)}
+        </div>
+      );
+    },
+  }),
+
+  columnHelper.accessor("assignedEmployeeDetails", {
+    header: "Assigned To",
+    cell: (info) => {
+      const details = info.getValue();
+      if (!details || details.length === 0) return "Unassigned";
+      return (
+        <div className="flex flex-wrap gap-1">
+          {details.map((employee) => (
+            <span
+              key={employee.id}
+              className="px-2 py-0.5 text-xs rounded-full bg-secondary text-secondary-foreground"
+            >
+              {employee.name}
+            </span>
+          ))}
         </div>
       );
     },
@@ -150,36 +151,15 @@ export const getColumns = () => [
       (info.getValue() as number) === 1
         ? "Admin"
         : (info.getValue() as number) === 2
-        ? "HR"
-        : "Project Lead",
+          ? "HR"
+          : "Project Lead",
     meta: { className: "table-cell w-20" },
   }),
 
   columnHelper.display({
     id: "actions",
     header: () => "Actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <MoreHorizontal />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Task actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => console.log("Edit", row.original)}>
-            <Edit className="mr-2 h-4 w-4" /> Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-red-500"
-            onClick={() => console.log("Delete", row.original)}
-          >
-            <Trash className="mr-2 h-4 w-4" /> Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    cell: ({ row }) => <ActionCell row={row.original} />,
     meta: { className: "w-20 text-center" },
   }),
 ];

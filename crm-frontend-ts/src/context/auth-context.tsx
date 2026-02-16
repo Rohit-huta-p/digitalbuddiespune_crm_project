@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUser = async () => {
     try {
       const response = await axios.post("/api/current-user");
+      console.log(response.data);
       if (response.data.user) {
         setUser(response.data.user);
       }

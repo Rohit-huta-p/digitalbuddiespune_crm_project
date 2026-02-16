@@ -17,6 +17,9 @@ export const taskSchema = z.object({
   email: z.string().email().optional().nullable(),
   status: z.string(),
   priority: z.string().optional().nullable(),
+  assignedEmployeeDetails: z
+    .array(z.object({ id: z.number(), name: z.string() }))
+    .optional(),
 });
 
 export type Task = z.infer<typeof taskSchema>;

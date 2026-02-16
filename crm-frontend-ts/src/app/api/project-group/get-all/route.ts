@@ -54,16 +54,46 @@ export async function POST(req: Request) {
 
     const { message, projects } = responseData.attributes;
 
-    // 🔍 Filter projects where user is a participant
-    const filteredProjects = projects.filter((project) =>
-      project.participants.some((p: any) => p.id === userId)
+    // 🔍 Filter projects where user is a participant OR the creator
+    let filteredProjects = projects.filter(
+      (project: any) =>
+        project.participants.some((p: any) => p.id === userId) ||
+        String(project.createdById) === String(userId)
     );
+
+    // 🔎 Apply search filter
+    const search = url.searchParams.get("search") || "";
+    if (search) {
+      const q = search.toLowerCase();
+      filteredProjects = filteredProjects.filter(
+        (p: any) =>
+          p.projectName?.toLowerCase().includes(q) ||
+          p.projectDesc?.toLowerCase().includes(q)
+      );
+    }
+
+    // 📋 Apply status filter
+    const status = url.searchParams.get("status") || "";
+    if (status) {
+      filteredProjects = filteredProjects.filter(
+        (p: any) => p.status?.toLowerCase() === status.toLowerCase()
+      );
+    }
+
+    // 📊 Total after filters but before pagination
+    const totalFiltered = filteredProjects.length;
+
+    // 📄 Apply pagination slicing
+    const pageNum = parseInt(num, 10);
+    const pageSize = parseInt(size, 10);
+    const start = (pageNum - 1) * pageSize;
+    const paginatedProjects = filteredProjects.slice(start, start + pageSize);
 
     return NextResponse.json({
       success: true,
       message,
-      projects: filteredProjects,
-      totalProjects: filteredProjects.length, // ✅ Reflect filtered count
+      projects: paginatedProjects,
+      totalProjects: totalFiltered,
     });
   } catch (error: any) {
     console.error("Unhandled error:", error);

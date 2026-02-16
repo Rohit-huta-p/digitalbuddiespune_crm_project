@@ -52,10 +52,10 @@ export default function CreateLeadPage() {
   };
 
   return (
-    <div className="w-full flex justify-center mt-10 px-4">
+    <div className="w-full flex justify-center mt-40 px-4">
       <Card className="w-full max-w-2xl shadow-md border rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-800">
+          <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-200">
             Create New Lead
           </CardTitle>
         </CardHeader>

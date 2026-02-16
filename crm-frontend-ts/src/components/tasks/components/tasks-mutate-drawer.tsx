@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { MultiSelect } from "./multiselect-dropdown";
 import axios from "axios";
 import { toast } from "sonner";
+import { useAuth } from "@/context/auth-context";
+import { useTasks } from "@/components/tasks/context/tasks-context";
 
 interface Props {
   open: boolean;
@@ -58,31 +61,56 @@ type TasksForm = z.infer<typeof formSchema>;
 
 export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
   const isUpdate = !!currentRow;
+  const { user } = useAuth();
+  const { refreshTasks } = useTasks();
+  const [employees, setEmployees] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await axios.post("/api/employees");
+        if (res.data?.attributes?.employees) {
+          setEmployees(res.data.attributes.employees);
+        }
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
 
   const form = useForm<TasksForm>({
     resolver: zodResolver(formSchema),
     defaultValues: currentRow
       ? {
-          taskName: currentRow.taskName,
-          description: currentRow.description,
-          deadlineTimestamp: currentRow.deadlineTimestamp
-            ? new Date(currentRow.deadlineTimestamp)
-            : undefined,
-          status: currentRow.status as "open" | "closed" | "pending", // Ensure correct enum type
-          assignedBy: String(currentRow.assignedBy), // Convert assignedBy to string
-          email: currentRow.email ?? undefined,
-          assignedToEmployeeId: currentRow.assignedToEmployeeId, // Ensure it's number[]
-        }
+        taskName: currentRow.taskName,
+        description: currentRow.description,
+        deadlineTimestamp: currentRow.deadlineTimestamp
+          ? new Date(currentRow.deadlineTimestamp)
+          : undefined,
+        status: currentRow.status as "open" | "closed" | "pending", // Ensure correct enum type
+        assignedBy: String(currentRow.assignedBy), // Convert assignedBy to string
+        email: currentRow.email ?? undefined,
+        assignedToEmployeeId: currentRow.assignedToEmployeeId, // Ensure it's number[]
+      }
       : {
-          taskName: "",
-          description: "",
-          deadlineTimestamp: new Date(),
-          status: "open",
-          assignedBy: "",
-          email: "",
-          assignedToEmployeeId: [] as number[],
-        },
+        taskName: "",
+        description: "",
+        deadlineTimestamp: new Date(),
+        status: "open",
+        assignedBy: user?.name || "",
+        email: user?.email || "",
+        assignedToEmployeeId: [] as number[],
+      },
   });
+
+  // Update assignedBy when user loads (if creating new task)
+  useEffect(() => {
+    if (!isUpdate && user) {
+      form.setValue("assignedBy", user.name);
+      form.setValue("email", user.email);
+    }
+  }, [user, isUpdate, form]);
 
   const onSubmit = async (data: TasksForm) => {
     // do something with the form data
@@ -97,7 +125,7 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
           "/api/update-tasks",
           {
             id: currentRow?.id,
-            status: data.status,
+            ...data,
           },
           {
             headers: { "Content-Type": "application/json" },
@@ -113,6 +141,7 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
         console.log(error);
         toast.error("CODE " + error.status + " " + error.message);
       }
+      refreshTasks();
       return;
     }
     try {
@@ -122,6 +151,9 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
       console.log(res.data);
     } catch (err: any) {
       console.error("Error:", err);
+      toast.error(err.message || "Failed to create task");
+    } finally {
+      refreshTasks();
     }
   };
 
@@ -242,10 +274,10 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
               control={form.control}
               name="assignedBy"
               render={({ field }) => (
-                <FormItem className="space-y-1">
+                <FormItem className="space-y-1 ">
                   <FormLabel>Assigned By</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter the assigned by" />
+                    <Input {...field} placeholder="Assigned By" readOnly className="bg-gray-800" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -278,9 +310,9 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
                     <MultiSelect
                       values={field.value.map(String)} // Convert numbers to strings
                       onChange={(values) => field.onChange(values.map(Number))} // Convert strings back to numbers
-                      options={[1, 2, 3, 4, 5].map((id) => ({
-                        label: `Employee ${id}`,
-                        value: String(id),
+                      options={employees.map((emp) => ({
+                        label: `${emp.name} (ID: ${emp.id})`,
+                        value: String(emp.id),
                       }))}
                       placeholder="Search and select employee(s)"
                     />

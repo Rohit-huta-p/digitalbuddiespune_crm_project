@@ -9,6 +9,8 @@ import { DataTable } from "@/components/employees/data-table";
 import { TasksMutateDrawer } from "@/components/tasks/components/tasks-mutate-drawer";
 import { User } from "@/types/user";
 import { cn } from "@/lib/utils";
+import { EmployeeMutateDrawer } from "@/components/employees/components/employee-mutate-drawer";
+import { toast } from "sonner";
 
 type Participant = {
   id: string;
@@ -32,7 +34,7 @@ const HRPage = () => {
   const [open, setOpen] = useState(false);
   const [employees, setEmployees] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-
+  const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const fetchEmployees = async () => {
     try {
       const res = await fetch("/api/employees", { method: "POST" });
@@ -52,6 +54,37 @@ const HRPage = () => {
       setProjects(data.projects || []);
     } catch (err) {
       console.error("Error fetching projects:", err);
+    }
+  };
+
+  const handleDeleteEmployee = async (user: User) => {
+    console.log("handleDeleteEmployee called for:", user);
+    try {
+      const res = await fetch("/api/employees", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, companyId: 1 }),
+      });
+      console.log("Delete response status:", res.status);
+      const result = await res.json();
+      console.log("Delete result:", result);
+
+      if (!res.ok) {
+        // Parse the nested backend error for a cleaner message
+        let message = "Failed to delete employee";
+        const raw = result.error || "";
+        if (raw.includes("foreign key constraint") || raw.includes("DataIntegrityViolation")) {
+          message = `Cannot delete ${user.name} — they are assigned to active projects. Remove them from all projects first.`;
+        } else if (typeof raw === "string" && raw.length < 200) {
+          message = raw;
+        }
+        throw new Error(message);
+      }
+      toast.success(`${user.name} deleted successfully`);
+      fetchEmployees();
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      toast.error(err.message || "Failed to delete employee");
     }
   };
 
@@ -148,13 +181,21 @@ const HRPage = () => {
       <section className="mb-10">
         <h2 className="text-2xl font-semibold mb-4">👨‍💼 Employees</h2>
         <div className="overflow-auto border rounded-xl shadow-sm">
-          <DataTable data={employees} />
+          <DataTable
+            data={employees}
+            onEdit={(user) => {
+              setSelectedEmployee(user);
+              setOpen(true);
+            }}
+            onDelete={handleDeleteEmployee}
+          />
         </div>
       </section>
 
-      <TasksMutateDrawer open={open} onOpenChange={() => setOpen(!open)} />
+      <EmployeeMutateDrawer open={open} onOpenChange={() => setOpen(!open)} />
     </Main>
   );
 };
 
 export default HRPage;
+

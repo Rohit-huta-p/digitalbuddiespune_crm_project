@@ -35,7 +35,7 @@ type Project = {
 const HomePage = () => {
   const [attendanceMarked, setAttendanceMarked] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
@@ -50,25 +50,36 @@ const HomePage = () => {
 
   const fetchTasks = async () => {
     try {
+      if (!user?.id) return; // wait for user to be available
       setLoading(true);
-      const response = await axios.post("/api/get-all-tasks");
-      const taskManagementData = response.data.data;
-      console.log("TASKS", taskManagementData);
+      const response = await axios.post("/api/get-tasks-by-employee", {
+        id: user.id,
+        companyId: user.companyId,
+      });
+      const taskManagementData = response.data?.data || [];
 
-      const filteredTasks = taskManagementData.filter((task: any) =>
-        task.assignedToEmployeeId.includes(user?.id)
-      );
+      // Normalize possible assigned fields and compare as strings
+      const filteredTasks = (taskManagementData as any[])
+        .filter(Boolean)
+        .filter((task: any) => {
+          const assigned =
+            task.assignedToEmployeeId || task.assignedEmployees || [];
+          const assignedArr = Array.isArray(assigned) ? assigned : [assigned];
+          return assignedArr.map(String).includes(String(user.id));
+        });
+
       setTasks(filteredTasks);
-
-      setLoading(false);
     } catch (err: any) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchTasks();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const fetchProjects = async () => {
     try {
@@ -165,47 +176,45 @@ const HomePage = () => {
       </div>
 
       {/* Calendar */}
-      <section className="mb-10 flex flex-row w-full">
-        <Card className="max-w-sm border-r-0 rounded-r-none">
+      <section className="mb-10 flex flex-col lg:flex-row w-full gap-4">
+        <Card className="w-full lg:w-1/3">
           <CardHeader>
             <CardTitle>📆 Calendar</CardTitle>
-            <CardDescription>
-              Check your upcoming tasks & events
-            </CardDescription>
+            <CardDescription>Check your upcoming tasks & events</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Calendar
-              className="rounded-md border"
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              initialFocus
-            />
+          <CardContent className="h-full">
+            <div className="min-h-[260px]">
+              <Calendar
+                className="rounded-md border"
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                initialFocus
+              />
+            </div>
           </CardContent>
         </Card>
 
         {/* Tasks */}
-
-        <Card className="w-full rounded-l-none">
+        <Card className="w-full lg:w-2/3">
           <CardHeader>
             <CardDescription>Check what you need to complete</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12">
+            <div className="h-[420px] -mx-4 overflow-auto px-4 py-2">
               <TaskTable
                 itemsPerPage={5}
                 loading={loading}
                 tasks={
                   selectedDate
                     ? tasks.filter((task: any) => {
-                        if (!task.deadlineTimestamp) return false;
-                        const taskDate = new Date(task.deadlineTimestamp);
-                        const compareDate = new Date(selectedDate);
-                        // Reset time portions for accurate date comparison
-                        taskDate.setHours(0, 0, 0, 0);
-                        compareDate.setHours(0, 0, 0, 0);
-                        return taskDate.getTime() === compareDate.getTime();
-                      })
+                      if (!task.deadlineTimestamp) return false;
+                      const taskDate = new Date(task.deadlineTimestamp);
+                      const compareDate = new Date(selectedDate);
+                      taskDate.setHours(0, 0, 0, 0);
+                      compareDate.setHours(0, 0, 0, 0);
+                      return taskDate.getTime() === compareDate.getTime();
+                    })
                     : tasks
                 }
                 noSearch

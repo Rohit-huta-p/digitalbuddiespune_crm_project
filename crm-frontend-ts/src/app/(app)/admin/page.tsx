@@ -9,6 +9,8 @@ import { DataTable } from "@/components/employees/data-table";
 import { TasksMutateDrawer } from "@/components/tasks/components/tasks-mutate-drawer";
 import { User } from "@/types/user";
 import { cn } from "@/lib/utils";
+import { Task } from "@/components/tasks/data/schema";
+import { EmployeeMutateDrawer } from "@/components/employees/components/employee-mutate-drawer";
 
 type Participant = {
   id: string;
@@ -30,6 +32,8 @@ const AdminPage = () => {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
+  const [currentTask, setCurrentTask] = useState<Task | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [employees, setEmployees] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -109,6 +113,16 @@ const AdminPage = () => {
               className: "bg-sky-500 dark:bg-sky-600 hover:bg-sky-600 dark:hover:bg-sky-700 text-white",
             },
             {
+              title: "Calculate Salary",
+              route: "/salaries/calculate",
+              className: "bg-orange-500 dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700 text-white",
+            },
+            {
+              title: "Salary History",
+              route: "/salaries",
+              className: "bg-teal-500 dark:bg-teal-600 hover:bg-teal-600 dark:hover:bg-teal-700 text-white",
+            },
+            {
               title: "Billing",
               route: "/billing",
               className: "bg-slate-500 dark:bg-slate-600 hover:bg-slate-600 dark:hover:bg-slate-700 text-white",
@@ -164,13 +178,24 @@ const AdminPage = () => {
 
       {/* Employees Table */}
       <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">👨‍💼 Employees</h2>
+        <h2 className="text-2xl font-semibold mb-4">👨💼 Employees</h2>
         <div className="overflow-auto border rounded-xl shadow-sm">
-          <DataTable data={employees} />
+          <DataTable
+            data={employees}
+            onEdit={(user) => {
+              setSelectedEmployee(user);
+              setOpen(true);
+            }}
+          />
         </div>
       </section>
 
-      <TasksMutateDrawer open={open} onOpenChange={() => setOpen(!open)} />
+      <EmployeeMutateDrawer
+        open={open}
+        onOpenChange={setOpen}
+        currentRow={selectedEmployee ?? undefined}
+      />
+
     </Main>
   );
 };

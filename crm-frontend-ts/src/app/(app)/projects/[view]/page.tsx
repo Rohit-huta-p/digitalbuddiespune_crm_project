@@ -203,7 +203,7 @@ const ProjectsIndividualView = ({ params }: { params: { view: string } }) => {
     dateStr ? new Date(dateStr).toLocaleString() : "N/A";
 
   return (
-    <TasksProvider>
+    <TasksProvider refreshTasks={loadAll}>
       <Main>
         {loading || !project ? (
           <p className="text-muted-foreground">Loading project details...</p>
@@ -435,13 +435,13 @@ const ProjectsIndividualView = ({ params }: { params: { view: string } }) => {
                         <MultiSelectValue>
                           {selectedEmployees.length > 0
                             ? selectedEmployees
-                                .map(
-                                  (id) =>
-                                    project?.participants?.find(
-                                      (p) => p.id === id
-                                    )?.name || "Unknown"
-                                )
-                                .join(", ")
+                              .map(
+                                (id) =>
+                                  project?.participants?.find(
+                                    (p) => p.id === id
+                                  )?.name || "Unknown"
+                              )
+                              .join(", ")
                             : "Select members"}
                         </MultiSelectValue>
                       </MultiSelectTrigger>

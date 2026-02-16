@@ -21,6 +21,7 @@ export default function AddEmployeeForm() {
     password: "",
     monthlySalary: "",
     hrId: "", // shown/required only when role === "2"
+    designation: "",
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +44,11 @@ export default function AddEmployeeForm() {
       toast.error("HR ID is required for HR role", {
         description: "Try numbers like 1, 2, 5, or 58.",
       });
+      return;
+    }
+
+    if (!formData.designation) {
+      toast.error("Designation is required");
       return;
     }
 
@@ -130,6 +136,27 @@ export default function AddEmployeeForm() {
                         <SelectItem value="1">Admin</SelectItem>
                         <SelectItem value="2">HR</SelectItem>
                         <SelectItem value="3">Employee</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="designation">Designation</Label>
+                  <Select
+                    value={formData.designation}
+                    onValueChange={(value: string) => handleChange({ target: { name: "designation", value } } as any)}
+                  >
+                    <SelectTrigger id="designation" className="w-full">
+                      <SelectValue placeholder="Select a designation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="Frontend Dev">Frontend Dev</SelectItem>
+                        <SelectItem value="Backend Dev">Backend Dev</SelectItem>
+                        <SelectItem value="Fullstack Dev">Fullstack Dev</SelectItem>
+                        <SelectItem value="DevOps">DevOps</SelectItem>
+                        <SelectItem value="QA">QA</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>

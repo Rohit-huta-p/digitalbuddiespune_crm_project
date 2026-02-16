@@ -1,5 +1,5 @@
 "use client";
-
+// app/projects/new/page.tsx
 import { Main } from "@/components/layout/main";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,11 +33,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-const clients = [
-  { id: "1", name: "Client 1" },
-  { id: "2", name: "Client 2" },
-  { id: "3", name: "Client 3" },
-];
+
 
 const allowedRoles = [
   "Frontend_Developer",
@@ -78,10 +74,10 @@ export default function ProjectsCreatePage() {
     axios
       .post("/api/get-all-clients")
       .then((res) => {
-        const fetchedClients = res.data.clients || [];
+        const fetchedClients = res.data.data || [];
         const formattedClients = fetchedClients.map((c: any) => ({
           id: String(c.clientId),
-          name: c.name,
+          name: c.name || c.clientName || `Client ${c.clientId}`,
         }));
         setClients(formattedClients);
       })
@@ -117,8 +113,23 @@ export default function ProjectsCreatePage() {
   };
 
   const createProject = async () => {
-    if (!projectName || !projectDesc || participants.length === 0) {
-      toast.error("Please fill all required fields.");
+    console.log("PROJECT NAME", projectName)
+    console.log("PROJECT DESC", projectDesc)
+    console.log("PARTICIPANTS", participants)
+    console.log("GROUP LEADERS", groupLeaders)
+    console.log("CLIENT ID", clientId)
+    console.log("CLIENTS", clients)
+    if (!projectName) {
+      toast.error("Please enter a Project Name.");
+      return;
+    }
+
+    if (participants.length === 0) {
+      if (selectedEmployees.length > 0) {
+        toast.error("Please click '+ Add' to assign the selected employees.");
+      } else {
+        toast.error("Please assign at least one participant.");
+      }
       return;
     }
 
@@ -182,16 +193,13 @@ export default function ProjectsCreatePage() {
               />
             </div>
             <div>
-              <Label htmlFor="desc">
-                Description <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="desc">Description</Label>
               <Textarea
                 id="desc"
                 placeholder="Short description of the project"
                 value={projectDesc}
                 onChange={(e) => setProjectDesc(e.target.value)}
                 rows={4}
-                required
               />
             </div>
           </section>

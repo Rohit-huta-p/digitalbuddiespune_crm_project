@@ -5,18 +5,43 @@ import CreateLeadPage from "@/components/leads/create-lead";
 import AddFollowUpPage from "@/components/leads/add-followup";
 import ViewFollowUpsPage from "@/components/leads/view-followups";
 import UpdateLeadStatusPage from "@/components/leads/update-status";
+import LeadsList from "@/components/leads/list";
 
 export default function LeadsManagementPage() {
-  const [activePage, setActivePage] = useState<string>("");
+  const [activePage, setActivePage] = useState<string>("list");
   const [openMenu, setOpenMenu] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
 
   return (
     <div className="relative min-h-screen p-4">
       {/* Main Content Area */}
       {activePage === "create" && <CreateLeadPage />}
-      {activePage === "followup" && <AddFollowUpPage />}
-      {activePage === "view-followups" && <ViewFollowUpsPage />}
-      {activePage === "status" && <UpdateLeadStatusPage />}
+      {activePage === "followup" && (
+        <AddFollowUpPage defaultLeadId={selectedLeadId ?? undefined} />
+      )}
+      {activePage === "view-followups" && (
+        <ViewFollowUpsPage defaultLeadId={selectedLeadId ?? undefined} />
+      )}
+      {activePage === "status" && (
+        <UpdateLeadStatusPage defaultLeadId={selectedLeadId ?? undefined} />
+      )}
+
+      {activePage === "list" && (
+        <LeadsList
+          onViewFollowUps={(id) => {
+            setSelectedLeadId(id);
+            setActivePage("view-followups");
+          }}
+          onAddFollowUp={(id) => {
+            setSelectedLeadId(id);
+            setActivePage("followup");
+          }}
+          onUpdateStatus={(id) => {
+            setSelectedLeadId(id);
+            setActivePage("status");
+          }}
+        />
+      )}
 
       {activePage === "" && (
         <div className="flex items-center justify-center h-[80vh]">
@@ -40,7 +65,7 @@ export default function LeadsManagementPage() {
                 setActivePage("create");
                 setOpenMenu(false);
               }}
-              className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+              className="bg-white dark:text-black dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
             >
               Create New Lead
             </button>
@@ -50,7 +75,7 @@ export default function LeadsManagementPage() {
                 setActivePage("followup");
                 setOpenMenu(false);
               }}
-              className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
             >
               Add Follow-up
             </button>
@@ -60,7 +85,7 @@ export default function LeadsManagementPage() {
                 setActivePage("view-followups");
                 setOpenMenu(false);
               }}
-              className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
             >
               View Follow-ups
             </button>
@@ -70,16 +95,25 @@ export default function LeadsManagementPage() {
                 setActivePage("status");
                 setOpenMenu(false);
               }}
-              className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
             >
               Update Lead Status
+            </button>
+            <button
+              onClick={() => {
+                setActivePage("list");
+                setOpenMenu(false);
+              }}
+              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              Show All Leads
             </button>
           </div>
         )}
 
         <button
           onClick={() => setOpenMenu(!openMenu)}
-          className="h-14 w-14 rounded-full bg-black text-white flex items-center justify-center shadow-xl hover:bg-gray-800 transition"
+          className="h-14 w-14 rounded-full dark:bg-gray-800 bg-black dark:text-white flex items-center justify-center shadow-xl hover:bg-gray-800 transition"
         >
           <span
             className={`text-3xl transform transition ${

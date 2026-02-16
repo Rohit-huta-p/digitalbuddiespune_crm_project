@@ -1,6 +1,5 @@
-import { IconLoader } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
-import { FormControl } from "@/components/ui/form";
+"use client";
+
 import {
   Select,
   SelectContent,
@@ -9,53 +8,44 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface SelectDropdownProps {
-  onValueChange?: (value: string) => void;
-  defaultValue: string | undefined;
-  placeholder?: string;
-  isPending?: boolean;
-  items: { label: string; value: string }[] | undefined;
-  disabled?: boolean;
-  className?: string;
-  isControlled?: boolean;
+export interface SelectItemOption<T extends string | number> {
+  label: string;
+  value: T;
 }
 
-export function SelectDropdown({
-  defaultValue,
-  onValueChange,
-  isPending,
+interface SelectDropdownProps<T extends string | number> {
+  items: SelectItemOption<T>[];
+  defaultValue?: T;
+  placeholder?: string;
+  onValueChange?: (value: T) => void;
+}
+
+export function SelectDropdown<T extends string | number>({
   items,
+  defaultValue,
   placeholder,
-  disabled,
-  className = "",
-  isControlled = false,
-}: SelectDropdownProps) {
-  const defaultState = isControlled
-    ? { value: defaultValue, onValueChange }
-    : { defaultValue, onValueChange };
+  onValueChange,
+}: SelectDropdownProps<T>) {
   return (
-    <Select {...defaultState}>
-      <FormControl>
-        <SelectTrigger disabled={disabled} className={cn(className)}>
-          <SelectValue placeholder={placeholder ?? "Select"} />
-        </SelectTrigger>
-      </FormControl>
+    <Select
+      defaultValue={defaultValue !== undefined ? String(defaultValue) : undefined}
+      onValueChange={(value) =>
+        onValueChange?.(
+          typeof items[0].value === "number"
+            ? (Number(value) as T)
+            : (value as T)
+        )
+      }
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
       <SelectContent>
-        {isPending ? (
-          <SelectItem disabled value="loading" className="h-14">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="h-5 w-5 animate-spin" />
-              {"  "}
-              Loading...
-            </div>
+        {items.map((item) => (
+          <SelectItem key={String(item.value)} value={String(item.value)}>
+            {item.label}
           </SelectItem>
-        ) : (
-          items?.map(({ label, value }) => (
-            <SelectItem key={value} value={value}>
-              {label}
-            </SelectItem>
-          ))
-        )}
+        ))}
       </SelectContent>
     </Select>
   );

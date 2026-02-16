@@ -64,6 +64,6 @@ export async function POST() {
         }
     */
     console.error("Get all tasks API error: ", error);
-    return NextResponse.json({ error });
+    return NextResponse.json({ error }, { status: error.status || 500 });
   }
 }

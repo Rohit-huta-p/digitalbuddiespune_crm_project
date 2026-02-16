@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +11,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Settings, User } from "lucide-react";
+import { Bell, Settings, Trash2, User } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function ProfileDropdown() {
+  const router = useRouter();
+
+  const handleReset = async () => {
+    if (!confirm("⚠️ DANGER: This will delete ALL data (Clients, Projects, Employees) except your Admin account. Are you sure?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/reset-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("Reset failed");
+      toast.success("Database reset successfully!");
+      router.refresh();
+      // Optional: Redirect to dashboard or logout
+    } catch (err) {
+      toast.error("Failed to reset database");
+    }
+  };
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -35,12 +60,11 @@ export function ProfileDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/settings/account">
+            <Link href="/settings">
               <User />
               Profile
             </Link>
           </DropdownMenuItem>
-
           <DropdownMenuItem asChild>
             <Link href="/settings/notifications">
               <Bell />
@@ -48,12 +72,17 @@ export function ProfileDropdown() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings/notifications">
+            <Link href="/settings">
               <Settings />
               Settings
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleReset} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+          <Trash2 className="mr-2 h-4 w-4" />
+          Reset Database
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Log out</DropdownMenuItem>
       </DropdownMenuContent>

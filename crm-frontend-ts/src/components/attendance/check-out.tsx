@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Info } from "lucide-react";
 
 export default function CheckOutPage() {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export default function CheckOutPage() {
       try {
         const res = await axios.get("/api/auth/me");
         const data = res.data;
-        
+
         if (data.authenticated && data.employeeId) {
           console.log("Employee ID loaded:", data.employeeId);
           setEmployeeId(data.employeeId);
@@ -30,7 +31,7 @@ export default function CheckOutPage() {
         toast.error("Please login first to use attendance features");
       }
     };
-    
+
     fetchEmployeeId();
   }, []);
 
@@ -58,19 +59,19 @@ export default function CheckOutPage() {
       }
     } catch (err: any) {
       console.error("Check-out error:", err.response?.data);
-      
-      const errorMsg = err.response?.data?.error?.message || 
-                       err.response?.data?.message || 
-                       err.response?.data?.error?.title || 
-                       "";
-      
+
+      const errorMsg = err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        err.response?.data?.error?.title ||
+        "";
+
       const status = err.response?.status;
-      
+
       // Handle 500 errors (usually backend serialization issues)
       if (status === 500) {
-        if (errorMsg.toLowerCase().includes("hibernate") || 
-            errorMsg.toLowerCase().includes("bytebuddy") ||
-            errorMsg.toLowerCase().includes("type definition")) {
+        if (errorMsg.toLowerCase().includes("hibernate") ||
+          errorMsg.toLowerCase().includes("bytebuddy") ||
+          errorMsg.toLowerCase().includes("type definition")) {
           toast.error("Server configuration error", {
             description: "The attendance was likely recorded, but there's a backend issue. Please refresh and check your attendance report.",
             duration: 6000,
@@ -83,13 +84,13 @@ export default function CheckOutPage() {
         }
         return;
       }
-      
+
       // Check if user hasn't checked in yet today
       const notFoundError = errorMsg.toLowerCase().includes("not found") ||
-                           errorMsg.toLowerCase().includes("no record") ||
-                           errorMsg.toLowerCase().includes("check in first") ||
-                           status === 404;
-      
+        errorMsg.toLowerCase().includes("no record") ||
+        errorMsg.toLowerCase().includes("check in first") ||
+        status === 404;
+
       if (notFoundError) {
         toast.error("You haven't checked in yet today!", {
           description: "Please check-in first before checking out.",
@@ -105,17 +106,17 @@ export default function CheckOutPage() {
   };
 
   return (
-    <div className="w-full flex justify-center mt-10 px-4">
+    <div className="w-full flex justify-center mt-20 px-4">
       <Card className="w-full max-w-2xl shadow-md border rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-800">
+          <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-200">
             Employee Check-Out
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="bg-blue-50 p-3 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-800 p-3 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-100">
               <strong>Employee ID:</strong> {employeeId || "Loading..."}
             </p>
           </div>
@@ -128,8 +129,8 @@ export default function CheckOutPage() {
               <p className="text-sm text-red-700 mb-3">
                 You need to check-in first before you can check-out.
               </p>
-              <Button 
-                className="w-full bg-red-600 hover:bg-red-700" 
+              <Button
+                className="w-full bg-red-600 hover:bg-red-700"
                 onClick={() => window.location.href = '/attendance-new'}
               >
                 Go to Check-In Page
@@ -137,15 +138,15 @@ export default function CheckOutPage() {
             </div>
           ) : (
             <>
-              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                <p className="text-sm text-yellow-800">
-                  ℹ️ This will record your check-out with the <strong>current date and time</strong> automatically.
+              <div className="bg-yellow-50 dark:bg-yellow-800 p-2 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                <p className="text-sm text-yellow-800 dark:text-yellow-100">
+                  <Info className="inline-block mr-2" /> This will record your check-out with the <strong>current date and time</strong> automatically.
                 </p>
               </div>
 
-              <Button 
-                className="w-full" 
-                disabled={loading || !employeeId} 
+              <Button
+                className="w-full"
+                disabled={loading || !employeeId}
                 onClick={handleSubmit}
               >
                 {loading ? "Recording..." : !employeeId ? "Loading..." : "Record Check-Out Now"}

@@ -1,5 +1,5 @@
 "use client";
-
+// /app/(app)/client/new/page.tsx
 import { Main } from "@/components/layout/main";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

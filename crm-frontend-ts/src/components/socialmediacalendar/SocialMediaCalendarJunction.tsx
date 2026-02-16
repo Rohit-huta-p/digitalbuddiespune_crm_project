@@ -10,10 +10,11 @@ import SocialListByClientPage from "./socialbyclientcomponent";
 import SocialListByStatusPage from "./SocialListByStatuscomponent";
 import SocialViewPage from "./socialGetByIdcomponent";
 import SocialDeletePage from "./social-delete";
+import { PlusIcon } from "lucide-react";
 
 export default function SocialMediaCalendarJunction() {
   // Which page to display
-  const [activePage, setActivePage] = useState("");
+  const [activePage, setActivePage] = useState("range");
 
   // Toggle for floating menu
   const [openMenu, setOpenMenu] = useState(false);
@@ -37,79 +38,78 @@ export default function SocialMediaCalendarJunction() {
       {/* FLOATING ACTION BUTTON */}
       {/* ------------------------------------------------------------------ */}
 
-     {/* FLOATING ACTION BUTTON */}
-<div className="fixed top-24 right-6 flex flex-col items-end gap-3 z-50">
+      {/* FLOATING ACTION BUTTON */}
+      <div className="fixed bottom-24 right-6 flex flex-col items-end gap-3 z-50">
 
-  {/* Menu Items */}
-  {openMenu && (
-    <div className="flex flex-col gap-3 animate-fadeIn items-end">
+        {/* Menu Items */}
+        {openMenu && (
+          <div className="flex flex-col gap-3 animate-fadeIn items-end">
 
-      <button
-        onClick={() => { setActivePage("range"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-      >
-        Date Range Search
-      </button>
+            <button
+              onClick={() => { setActivePage("range"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              Date Range Search
+            </button>
 
-      <button
-        onClick={() => { setActivePage("create"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-      >
-        Create Entry
-      </button>
+            <button
+              onClick={() => { setActivePage("create"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              Create Entry
+            </button>
 
-      <button
-        onClick={() => { setActivePage("update"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-      >
-        Update Entry
-      </button>
+            <button
+              onClick={() => { setActivePage("update"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              Update Entry
+            </button>
 
-      <button
-        onClick={() => { setActivePage("client"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-      >
-        List by Client
-      </button>
+            <button
+              onClick={() => { setActivePage("client"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              List by Client
+            </button>
 
-      <button
-        onClick={() => { setActivePage("status"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-      >
-        List by Status
-      </button>
+            <button
+              onClick={() => { setActivePage("status"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              List by Status
+            </button>
 
-      <button
-        onClick={() => { setActivePage("view"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-      >
-        View by ID
-      </button>
+            <button
+              onClick={() => { setActivePage("view"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
+            >
+              View by ID
+            </button>
 
-      <button
-        onClick={() => { setActivePage("delete"); setOpenMenu(false); }}
-        className="bg-white shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-red-50 text-red-600"
-      >
-        Delete Entry
-      </button>
+            <button
+              onClick={() => { setActivePage("delete"); setOpenMenu(false); }}
+              className="bg-white border border-gray-200 dark:border-gray-700 dark:text-gray-700 shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-red-50 text-red-600"
+            >
+              Delete Entry
+            </button>
 
-    </div>
-  )}
+          </div>
+        )}
 
-  {/* Main Floating Button */}
-  <button
-    onClick={() => setOpenMenu(!openMenu)}
-    className="h-14 w-14 rounded-full bg-black text-white flex items-center justify-center shadow-xl hover:bg-gray-800 transition"
-  >
-    <span
-      className={`text-3xl transform transition ${
-        openMenu ? "rotate-45" : "rotate-0"
-      }`}
-    >
-      +
-    </span>
-  </button>
-</div>
+        {/* Main Floating Button */}
+        <button
+          onClick={() => setOpenMenu(!openMenu)}
+          className="h-14 w-14 rounded-full bg-black dark:bg-gray-800 dark:text-gray-700 text-white flex items-center justify-center shadow-xl hover:bg-gray-800 transition"
+        >
+          <span
+            className={`text-3xl dark:text-white transform transition ${openMenu ? "rotate-45" : "rotate-0"
+              }`}
+          >
+            <PlusIcon />
+          </span>
+        </button>
+      </div>
 
     </div>
   );

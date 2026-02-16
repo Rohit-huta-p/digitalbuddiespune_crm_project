@@ -3,7 +3,6 @@ import {
   IconChecklist,
   IconDeviceImacPlus,
   IconLayoutDashboard,
-  IconUser,
   IconUserScreen,
   IconUsersGroup,
   IconVocabulary,
@@ -38,12 +37,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Clients",
-          url: "/client",
-          icon: IconUser,
-        },
-        {
-          title: "Client Management",
-          url: "/clients-new",
+          url: "/clients",
           icon: IconAddressBook,
         },
       ],
@@ -123,7 +117,7 @@ export const sidebarData: SidebarData = {
       title: "Social Media",
       role: "Employee",
       items: [
-         {
+        {
           title: "Social Media Calendar",
           url: "/socialmediacalendar",
           // badge: "Not Marked",
