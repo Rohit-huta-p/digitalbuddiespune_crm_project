@@ -46,7 +46,8 @@ public class ClientService {
 
         if (total > 0) {
             workDonePct = (done * 100.0) / total;
-            if (workDonePct > 100.0) workDonePct = 100.0;
+            if (workDonePct > 100.0)
+                workDonePct = 100.0;
             pendingPct = 100.0 - workDonePct;
         }
 
@@ -57,19 +58,25 @@ public class ClientService {
     // ✅ Create Client
     public ResponseEntity<ResponseDTO<Map<String, Object>>> createClient(Map<String, ?> request) {
         Long companyIdFromToken = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        if (!companyIdFromToken.equals(requestCompanyId)) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
+        // Long requestCompanyId =
+        // Long.parseLong(request.get(Constants.COMPANY_ID).toString());
+        // if (!companyIdFromToken.equals(requestCompanyId)) {
+        // throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
+        // }
 
         String name = request.get(Constants.CLIENT_NAME).toString();
         String phno = request.get(Constants.CLIENT_PHNO).toString();
         String email = request.get(Constants.CLIENT_EMAIL).toString();
         String password = request.get(Constants.CLIENT_PASSWORD).toString();
 
-        Integer totalPosts = request.get("totalPosts") != null ? Integer.parseInt(request.get("totalPosts").toString()) : 0;
-        Integer totalVideos = request.get("totalVideos") != null ? Integer.parseInt(request.get("totalVideos").toString()) : 0;
-        Integer totalShoots = request.get("totalShoots") != null ? Integer.parseInt(request.get("totalShoots").toString()) : 0;
+        Integer totalPosts = request.get("totalPosts") != null ? Integer.parseInt(request.get("totalPosts").toString())
+                : 0;
+        Integer totalVideos = request.get("totalVideos") != null
+                ? Integer.parseInt(request.get("totalVideos").toString())
+                : 0;
+        Integer totalShoots = request.get("totalShoots") != null
+                ? Integer.parseInt(request.get("totalShoots").toString())
+                : 0;
 
         ClientDetails client = new ClientDetails();
         client.setName(name);
@@ -78,7 +85,7 @@ public class ClientService {
         client.setPassword(password);
         client.setUsername(phno);
         client.setRole(4);
-        client.setCompanyId(requestCompanyId);
+        client.setCompanyId(companyIdFromToken);
         client.setTotalPosts(totalPosts);
         client.setTotalVideos(totalVideos);
         client.setTotalShoots(totalShoots);
@@ -107,10 +114,14 @@ public class ClientService {
         ClientDetails client = clientDetailsRepository.findById(clientId)
                 .orElseThrow(() -> new NotFoundException("Client not found with ID: " + clientId));
 
-        if (request.containsKey("name")) client.setName(request.get("name").toString());
-        if (request.containsKey("phno")) client.setPhno(request.get("phno").toString());
-        if (request.containsKey("email")) client.setEmail(request.get("email").toString());
-        if (request.containsKey("password")) client.setPassword(request.get("password").toString());
+        if (request.containsKey("name"))
+            client.setName(request.get("name").toString());
+        if (request.containsKey("phno"))
+            client.setPhno(request.get("phno").toString());
+        if (request.containsKey("email"))
+            client.setEmail(request.get("email").toString());
+        if (request.containsKey("password"))
+            client.setPassword(request.get("password").toString());
 
         if (request.containsKey("totalPosts"))
             client.setTotalPosts(Integer.parseInt(request.get("totalPosts").toString()));
@@ -143,23 +154,24 @@ public class ClientService {
             throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
         }
 
-        List<Map<String, Object>> clients = clientDetailsRepository.findByCompanyId(requestCompanyId).stream().map(client -> {
-            Map<String, Object> clientMap = new HashMap<>();
-            clientMap.put("clientId", client.getClientId());
-            clientMap.put("name", client.getName());
-            clientMap.put("email", client.getEmail());
-            clientMap.put("phno", client.getPhno());
-            clientMap.put("username", client.getUsername());
-            clientMap.put("totalPosts", client.getTotalPosts());
-            clientMap.put("totalVideos", client.getTotalVideos());
-            clientMap.put("totalShoots", client.getTotalShoots());
-            clientMap.put("completedPosts", client.getCompletedPosts());
-            clientMap.put("completedVideos", client.getCompletedVideos());
-            clientMap.put("completedShoots", client.getCompletedShoots());
-            clientMap.put("workDonePercentage", client.getWorkDonePercentage());
-            clientMap.put("pendingPercentage", client.getPendingPercentage());
-            return clientMap;
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> clients = clientDetailsRepository.findByCompanyId(requestCompanyId).stream()
+                .map(client -> {
+                    Map<String, Object> clientMap = new HashMap<>();
+                    clientMap.put("clientId", client.getClientId());
+                    clientMap.put("name", client.getName());
+                    clientMap.put("email", client.getEmail());
+                    clientMap.put("phno", client.getPhno());
+                    clientMap.put("username", client.getUsername());
+                    clientMap.put("totalPosts", client.getTotalPosts());
+                    clientMap.put("totalVideos", client.getTotalVideos());
+                    clientMap.put("totalShoots", client.getTotalShoots());
+                    clientMap.put("completedPosts", client.getCompletedPosts());
+                    clientMap.put("completedVideos", client.getCompletedVideos());
+                    clientMap.put("completedShoots", client.getCompletedShoots());
+                    clientMap.put("workDonePercentage", client.getWorkDonePercentage());
+                    clientMap.put("pendingPercentage", client.getPendingPercentage());
+                    return clientMap;
+                }).collect(Collectors.toList());
 
         Map<String, Object> responseAttributes = new HashMap<>();
         responseAttributes.put("clients", clients);
@@ -235,6 +247,7 @@ public class ClientService {
         dto.setAttributes(response);
         return ResponseEntity.ok(dto);
     }
+
     // ✅ Fetch projects associated with a client
     public ResponseEntity<ResponseDTO<Map<String, Object>>> getProjectsByClientId(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();

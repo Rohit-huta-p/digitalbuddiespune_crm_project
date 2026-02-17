@@ -60,11 +60,9 @@ public class EmployeeController {
 	@PostMapping("/create")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> createEmployee(@RequestBody Map<String, ?> employeeData) {
 
-		String hrId=employeeData.get(Keys.HRID).toString();
-		if(hrId!=null)
-		{
+		if (employeeData.get(Keys.HRID) != null) {
 			new RequestValidator(employeeData)
-				.hasId(Keys.HRID,true);
+					.hasId(Keys.HRID, true);
 		}
 		new RequestValidator(employeeData).hasName(Keys.NAME).hasEmail(Keys.EMAIL).hasPhoneNumber(Keys.MOBILE)
 				.hasIntegerId(Keys.ROLE).hasPassword(Keys.PASSWORD)
@@ -79,53 +77,53 @@ public class EmployeeController {
 		responseDTO.setAttributes(responseAttributes);
 		return ResponseEntity.ok(responseDTO);
 
-
 	}
 
-//	@PostMapping("/update")
-//	public ResponseEntity<ResponseDTO<Map<String, Object>>> updateEmployee(@RequestBody Map<String, ?> employeeData) {
-//
-//		new RequestValidator(employeeData).hasName(Keys.NAME).hasEmail(Keys.EMAIL).hasPhoneNumber(Keys.MOBILE)
-//				.hasIntegerId(Keys.ROLE).hasPassword(Keys.PASSWORD).hasId(Keys.ID, true);
-//
-//		long id = Long.parseLong(employeeData.get(Keys.ID).toString());
-//		emp_Service.updateEmployee(id, employeeData);
-//
-//		Map<String, Object> responseAttributes = new HashMap<>();
-//		responseAttributes.put("message", "Employee updated successfully");
-//
-//		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-//		responseDTO.setAttributes(responseAttributes);
-//		return ResponseEntity.ok(responseDTO);
-//	}
-	
-	@PostMapping("/update")
+	// @PostMapping("/update")
+	// public ResponseEntity<ResponseDTO<Map<String, Object>>>
+	// updateEmployee(@RequestBody Map<String, ?> employeeData) {
+	//
+	// new
+	// RequestValidator(employeeData).hasName(Keys.NAME).hasEmail(Keys.EMAIL).hasPhoneNumber(Keys.MOBILE)
+	// .hasIntegerId(Keys.ROLE).hasPassword(Keys.PASSWORD).hasId(Keys.ID, true);
+	//
+	// long id = Long.parseLong(employeeData.get(Keys.ID).toString());
+	// emp_Service.updateEmployee(id, employeeData);
+	//
+	// Map<String, Object> responseAttributes = new HashMap<>();
+	// responseAttributes.put("message", "Employee updated successfully");
+	//
+	// ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+	// responseDTO.setAttributes(responseAttributes);
+	// return ResponseEntity.ok(responseDTO);
+	// }
+
+	@PutMapping("/update")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> updateEmployee(@RequestBody Map<String, ?> employeeData) {
-	    new RequestValidator(employeeData).hasId(Keys.ID, true)
-	    	.hasId(Constants.COMPANY_ID,true);
+		new RequestValidator(employeeData).hasId(Keys.ID, true)
+				.hasId(Constants.COMPANY_ID, true);
 
-	    long id = Long.parseLong(employeeData.get(Keys.ID).toString());
-	    emp_Service.updateEmployee(id, employeeData);
+		long id = Long.parseLong(employeeData.get(Keys.ID).toString());
+		emp_Service.updateEmployee(id, employeeData);
 
-	    Map<String, Object> responseAttributes = new HashMap<>();
-	    responseAttributes.put("message", "Employee updated successfully");
+		Map<String, Object> responseAttributes = new HashMap<>();
+		responseAttributes.put("message", "Employee updated successfully");
 
-	    ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-	    responseDTO.setAttributes(responseAttributes);
-	    return ResponseEntity.ok(responseDTO);
+		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+		responseDTO.setAttributes(responseAttributes);
+		return ResponseEntity.ok(responseDTO);
 	}
-
 
 	@PostMapping("/get_employee_by_id")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> getEmployee(@RequestBody Map<String, ?> requestData) {
 
 		new RequestValidator(requestData).hasId(Keys.ID, true)
-		 .hasId(Constants.COMPANY_ID, true)
-		 .hasId(Constants.COMPANY_ID, true);
+				.hasId(Constants.COMPANY_ID, true)
+				.hasId(Constants.COMPANY_ID, true);
 
 		long id = Long.parseLong(requestData.get(Keys.ID).toString());
-		Long companyId=Long.parseLong(requestData.get(Constants.COMPANY_ID).toString());
-		Employee employee = emp_Service.getEmployeeById(id,companyId);
+		Long companyId = Long.parseLong(requestData.get(Constants.COMPANY_ID).toString());
+		Employee employee = emp_Service.getEmployeeById(id, companyId);
 
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("name", employee.getName());
@@ -144,10 +142,10 @@ public class EmployeeController {
 	}
 
 	@PostMapping("/get_employee")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllEmployees(@RequestBody Map<String,?> request) {
+	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllEmployees(@RequestBody Map<String, ?> request) {
 
 		new RequestValidator(request)
-			.hasId(Constants.COMPANY_ID,true);
+				.hasId(Constants.COMPANY_ID, true);
 		List<Employee> employees = emp_Service.getAllEmployee(request);
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("employees", employees);
@@ -188,8 +186,8 @@ public class EmployeeController {
 				.hasId(Constants.COMPANY_ID, true);
 
 		long id = Long.parseLong(requestData.get(Keys.ID).toString());
-		Long requestCompanyId=Long.parseLong(requestData.get(Constants.COMPANY_ID).toString());
-		emp_Service.deleteEmployee(id,requestCompanyId);
+		Long requestCompanyId = Long.parseLong(requestData.get(Constants.COMPANY_ID).toString());
+		emp_Service.deleteEmployee(id, requestCompanyId);
 
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("message", "Employee deleted successfully");
@@ -199,41 +197,47 @@ public class EmployeeController {
 		return ResponseEntity.ok(responseDTO);
 	}
 
-//	@PostMapping("/login")
-//	public ResponseEntity<ResponseDTO<Map<String, Object>>> loginEmployee(@RequestBody Map<String, ?> credentials) {
-//
-//		String employeeId = credentials.get(Keys.ID).toString();
-//		String password = credentials.get(Keys.PASSWORD).toString();
-//		Double latitude = Double.parseDouble(credentials.get(Constants.FIELD_LATITUDE).toString());
-//		Double longitude = Double.parseDouble(credentials.get(Constants.FIELD_LONGITUDE).toString());
-//
-//		Map<String, Object> credentialData = Map.of(Constants.FIELD_EMPLOYEE_ID, employeeId, Keys.PASSWORD, password,
-//				Constants.FIELD_LATITUDE, latitude, Constants.FIELD_LONGITUDE, longitude);
-//
-//		new RequestValidator(credentialData).hasValidEmployeeId(Constants.FIELD_EMPLOYEE_ID).hasPassword(Keys.PASSWORD)
-//				.hasValidLatitude(Constants.FIELD_LATITUDE).hasValidLongitude(Constants.FIELD_LONGITUDE);
-//
-//		JwtProvider jwtProvider = new JwtProvider();
-//		Employee employee = emp_Service.authenticateEmployee(employeeId, password);
-//		String token = jwtProvider.generateToken(employee);
-//
-//		Map<String, Object> loginRequest = Map.of(Constants.FIELD_EMPLOYEE_ID, employee.getId(),
-//				Constants.FIELD_LATITUDE, latitude, Constants.FIELD_LONGITUDE, longitude);
-//
-//		workTimeLocationService.handleLogin(loginRequest);
-//
-//		Map<String, Object> responseAttributes = new HashMap<>();
-//		responseAttributes.put("token", token);
-//		responseAttributes.put("employee_id", employee.getEmployeeId());
-//		responseAttributes.put("id", employee.getId());
-//		responseAttributes.put("role", employee.getRoleDescription());
-//		responseAttributes.put("message", "Login successful");
-//
-//		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-//		responseDTO.setAttributes(responseAttributes);
-//
-//		return ResponseEntity.ok(responseDTO);
-//	}
+	// @PostMapping("/login")
+	// public ResponseEntity<ResponseDTO<Map<String, Object>>>
+	// loginEmployee(@RequestBody Map<String, ?> credentials) {
+	//
+	// String employeeId = credentials.get(Keys.ID).toString();
+	// String password = credentials.get(Keys.PASSWORD).toString();
+	// Double latitude =
+	// Double.parseDouble(credentials.get(Constants.FIELD_LATITUDE).toString());
+	// Double longitude =
+	// Double.parseDouble(credentials.get(Constants.FIELD_LONGITUDE).toString());
+	//
+	// Map<String, Object> credentialData = Map.of(Constants.FIELD_EMPLOYEE_ID,
+	// employeeId, Keys.PASSWORD, password,
+	// Constants.FIELD_LATITUDE, latitude, Constants.FIELD_LONGITUDE, longitude);
+	//
+	// new
+	// RequestValidator(credentialData).hasValidEmployeeId(Constants.FIELD_EMPLOYEE_ID).hasPassword(Keys.PASSWORD)
+	// .hasValidLatitude(Constants.FIELD_LATITUDE).hasValidLongitude(Constants.FIELD_LONGITUDE);
+	//
+	// JwtProvider jwtProvider = new JwtProvider();
+	// Employee employee = emp_Service.authenticateEmployee(employeeId, password);
+	// String token = jwtProvider.generateToken(employee);
+	//
+	// Map<String, Object> loginRequest = Map.of(Constants.FIELD_EMPLOYEE_ID,
+	// employee.getId(),
+	// Constants.FIELD_LATITUDE, latitude, Constants.FIELD_LONGITUDE, longitude);
+	//
+	// workTimeLocationService.handleLogin(loginRequest);
+	//
+	// Map<String, Object> responseAttributes = new HashMap<>();
+	// responseAttributes.put("token", token);
+	// responseAttributes.put("employee_id", employee.getEmployeeId());
+	// responseAttributes.put("id", employee.getId());
+	// responseAttributes.put("role", employee.getRoleDescription());
+	// responseAttributes.put("message", "Login successful");
+	//
+	// ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+	// responseDTO.setAttributes(responseAttributes);
+	//
+	// return ResponseEntity.ok(responseDTO);
+	// }
 
 	@PostMapping("/login")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> loginEmployee(@RequestBody Map<String, ?> credentials) {
@@ -261,35 +265,42 @@ public class EmployeeController {
 		return ResponseEntity.ok(responseDTO);
 	}
 
-//	@PostMapping("/logout")
-//	public ResponseEntity<ResponseDTO<Map<String, Object>>> logout(@RequestBody Map<String, ?> request) {
-//
-//		String employeeId = request.get(Constants.FIELD_EMPLOYEE_ID).toString();
-//		Double latitude = Double.parseDouble(request.get(Constants.FIELD_LATITUDE).toString());
-//		Double longitude = Double.parseDouble(request.get(Constants.FIELD_LONGITUDE).toString());
-//
-//		Map<String, Object> validateData = Map.of(Constants.FIELD_EMPLOYEE_ID, employeeId, Constants.FIELD_LATITUDE,
-//				latitude, Constants.FIELD_LONGITUDE, longitude);
-//
-//		new RequestValidator(validateData).hasValidEmployeeId(Constants.FIELD_EMPLOYEE_ID)
-//				.hasValidLatitude(Constants.FIELD_LATITUDE).hasValidLongitude(Constants.FIELD_LONGITUDE);
-//
-//		Employee emp = emp_Service.findEmployeeByEmployeeId(employeeId);
-//
-//		Map<String, Object> requestData = Map.of(Constants.FIELD_EMPLOYEE_ID, emp.getId(), Constants.FIELD_LATITUDE,
-//				latitude, Constants.FIELD_LONGITUDE, longitude);
-//
-//		workTimeLocationService.handleLogout(requestData);
-//		double totalDailySalary = salaryService.calculateAndLogDailySalary(emp.getId());
-//
-//		Map<String, Object> responseAttributes = new HashMap<>();
-//		responseAttributes.put("message", "Logout successful.");
-//		// responseAttributes.put("daily_salary", totalDailySalary);
-//
-//		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-//		responseDTO.setAttributes(responseAttributes);
-//		return ResponseEntity.ok(responseDTO);
-//	}
+	// @PostMapping("/logout")
+	// public ResponseEntity<ResponseDTO<Map<String, Object>>> logout(@RequestBody
+	// Map<String, ?> request) {
+	//
+	// String employeeId = request.get(Constants.FIELD_EMPLOYEE_ID).toString();
+	// Double latitude =
+	// Double.parseDouble(request.get(Constants.FIELD_LATITUDE).toString());
+	// Double longitude =
+	// Double.parseDouble(request.get(Constants.FIELD_LONGITUDE).toString());
+	//
+	// Map<String, Object> validateData = Map.of(Constants.FIELD_EMPLOYEE_ID,
+	// employeeId, Constants.FIELD_LATITUDE,
+	// latitude, Constants.FIELD_LONGITUDE, longitude);
+	//
+	// new
+	// RequestValidator(validateData).hasValidEmployeeId(Constants.FIELD_EMPLOYEE_ID)
+	// .hasValidLatitude(Constants.FIELD_LATITUDE).hasValidLongitude(Constants.FIELD_LONGITUDE);
+	//
+	// Employee emp = emp_Service.findEmployeeByEmployeeId(employeeId);
+	//
+	// Map<String, Object> requestData = Map.of(Constants.FIELD_EMPLOYEE_ID,
+	// emp.getId(), Constants.FIELD_LATITUDE,
+	// latitude, Constants.FIELD_LONGITUDE, longitude);
+	//
+	// workTimeLocationService.handleLogout(requestData);
+	// double totalDailySalary =
+	// salaryService.calculateAndLogDailySalary(emp.getId());
+	//
+	// Map<String, Object> responseAttributes = new HashMap<>();
+	// responseAttributes.put("message", "Logout successful.");
+	// // responseAttributes.put("daily_salary", totalDailySalary);
+	//
+	// ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+	// responseDTO.setAttributes(responseAttributes);
+	// return ResponseEntity.ok(responseDTO);
+	// }
 
 	@PostMapping("/logout")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> logout(@RequestBody Map<String, ?> request) {
@@ -308,7 +319,23 @@ public class EmployeeController {
 		return ResponseEntity.ok(responseDTO);
 
 	}
-//
+
+	@PostMapping("/reset-data")
+	public ResponseEntity<ResponseDTO<Map<String, Object>>> resetData() {
+
+		emp_Service.resetCompanyData();
+
+		Map<String, Object> responseAttributes = new HashMap<>();
+		// Make sure responseAttributes isn't final or immutable if it was copypasted,
+		// but here it's new HashMap
+		responseAttributes.put("message", "Company data reset successfully. Admin preserved.");
+
+		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+		responseDTO.setAttributes(responseAttributes);
+		return ResponseEntity.ok(responseDTO);
+	}
+
+	//
 	@PostMapping("/mark-login")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> markLogin(@RequestBody Map<String, ?> request) {
 		new RequestValidator(request).hasId(Keys.ID, true).hasValidLatitude(Constants.FIELD_LATITUDE)
@@ -318,9 +345,9 @@ public class EmployeeController {
 		Long id = Long.parseLong(request.get(Keys.ID).toString());
 		Double latitude = Double.parseDouble(request.get(Constants.FIELD_LATITUDE).toString());
 		Double longitude = Double.parseDouble(request.get(Constants.FIELD_LONGITUDE).toString());
-		Long companyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
+		Long companyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
 		Map<String, ?> loginRequest = Map.of(Keys.ID, id, Constants.FIELD_LATITUDE, latitude, Constants.FIELD_LONGITUDE,
-				longitude,Constants.COMPANY_ID,companyId);
+				longitude, Constants.COMPANY_ID, companyId);
 
 		workTimeLocationService.handleLogin(loginRequest);
 
@@ -341,13 +368,13 @@ public class EmployeeController {
 		Long id = Long.parseLong(request.get(Keys.ID).toString());
 		Double latitude = Double.parseDouble(request.get(Constants.FIELD_LATITUDE).toString());
 		Double longitude = Double.parseDouble(request.get(Constants.FIELD_LONGITUDE).toString());
-		Long companyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
+		Long companyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
 		Map<String, ?> loginRequest = Map.of(Keys.ID, id, Constants.FIELD_LATITUDE, latitude, Constants.FIELD_LONGITUDE,
-				longitude,Constants.COMPANY_ID,companyId);
+				longitude, Constants.COMPANY_ID, companyId);
 
 		workTimeLocationService.handleLogout(loginRequest);
 		double totalDailySalary = salaryService.calculateAndLogDailySalary(id);
-		
+
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("message", "Logout-Mark successful.");
 
@@ -360,7 +387,6 @@ public class EmployeeController {
 	@PostMapping("/mark-attendance")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> markAttendance(@RequestBody Map<String, ?> request) {
 		new RequestValidator(request).hasId(Keys.ID, true);
-			
 
 		workTimeLocationService.markAttendance(request);
 
@@ -372,16 +398,15 @@ public class EmployeeController {
 
 		return ResponseEntity.ok(responseDTO);
 	}
-	
+
 	@PostMapping("/check-attendance")
-	public ResponseEntity<ResponseDTO<Map<String,Object>>> checkAttendance(@RequestBody Map<String,?>request)
-	{
+	public ResponseEntity<ResponseDTO<Map<String, Object>>> checkAttendance(@RequestBody Map<String, ?> request) {
 		new RequestValidator(request)
-			.hasId(Keys.ID, true);
-			//.hasId(Constants.COMPANY_ID, true);
-		
-		boolean isPresent=workTimeLocationService.checkAttendance(request);
-		
+				.hasId(Keys.ID, true);
+		// .hasId(Constants.COMPANY_ID, true);
+
+		boolean isPresent = workTimeLocationService.checkAttendance(request);
+
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("isPresent", isPresent);
 

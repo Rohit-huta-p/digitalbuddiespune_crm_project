@@ -25,10 +25,11 @@ public class RequestValidator {
 		Object value = entity.get(key);
 		return (value instanceof String) ? ((String) value).trim() : null;
 	}
-    public RequestValidator optional(String key) {
-        // Do nothing — just allow optional keys to pass silently.
-        return this;
-    }
+
+	public RequestValidator optional(String key) {
+		// Do nothing — just allow optional keys to pass silently.
+		return this;
+	}
 
 	public RequestValidator hasString(String key) {
 		if (getStringValue(key) == null || getStringValue(key).isEmpty())
@@ -82,7 +83,7 @@ public class RequestValidator {
 	public RequestValidator hasLong(String key) {
 		try {
 			if (!entity.containsKey(key) || entity.get(key) == null)
-				throw new BadRequestException(key+" is missing");
+				throw new BadRequestException(key + " is missing");
 			Long.parseLong(entity.get(key).toString());
 		} catch (NumberFormatException e) {
 			throw new BadRequestException("Invalid value for " + key + "!");
@@ -110,8 +111,12 @@ public class RequestValidator {
 	}
 
 	public RequestValidator hasIntegerId(String key) {
+		Object value = entity.get(key);
+		if (value == null || value.toString().trim().isEmpty()) {
+			throw new BadRequestException(key + " missing!");
+		}
 		try {
-			Integer role = Integer.parseInt(entity.get(key).toString());
+			Integer role = Integer.parseInt(value.toString());
 			if (role < 1 || role > 3) {
 				throw new BadRequestException(
 						"Invalid role value! Allowed values: 1 (Admin), 2 (Executive), 3 (Employee)");
@@ -121,7 +126,6 @@ public class RequestValidator {
 		}
 		return this;
 	}
-	
 
 	public RequestValidator hasEmail(String key) {
 		String value = getStringValue(key);
@@ -132,26 +136,25 @@ public class RequestValidator {
 			throw new BadRequestException("Invalid email format!");
 		return this;
 	}
-	
+
 	public RequestValidator hasEmail(String key, boolean required) {
-	    String value = getStringValue(key);
+		String value = getStringValue(key);
 
-	    if (value == null || value.isEmpty()) {
-	        if (required) {
-	            throw new BadRequestException("Email missing");
-	        } else {
-	            return this; // Skip validation if not required
-	        }
-	    }
+		if (value == null || value.isEmpty()) {
+			if (required) {
+				throw new BadRequestException("Email missing");
+			} else {
+				return this; // Skip validation if not required
+			}
+		}
 
-	    String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-	    if (!Pattern.matches(emailRegex, value)) {
-	        throw new BadRequestException("Invalid email format!");
-	    }
+		String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+		if (!Pattern.matches(emailRegex, value)) {
+			throw new BadRequestException("Invalid email format!");
+		}
 
-	    return this;
+		return this;
 	}
-
 
 	public RequestValidator hasPassword(String key) {
 		// Check if the key is present and the value is not null or empty
@@ -217,21 +220,20 @@ public class RequestValidator {
 	}
 
 	public RequestValidator hasValidDateTime(String key) {
-	    String value = getStringValue(key);
-	    if (value == null || value.isEmpty()) {
-	        throw new BadRequestException("Deadline time missing!");
-	    }
-	    try {
-	        LocalDateTime deadline = LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-	        if (deadline.isBefore(LocalDateTime.now())) {
-	            throw new BadRequestException("Deadline must be a future date-time.");
-	        }
-	    } catch (DateTimeParseException e) {
-	        throw new BadRequestException("Invalid date-time format for field: " + key);
-	    }
-	    return this;
+		String value = getStringValue(key);
+		if (value == null || value.isEmpty()) {
+			throw new BadRequestException("Deadline time missing!");
+		}
+		try {
+			LocalDateTime deadline = LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			if (deadline.isBefore(LocalDateTime.now())) {
+				throw new BadRequestException("Deadline must be a future date-time.");
+			}
+		} catch (DateTimeParseException e) {
+			throw new BadRequestException("Invalid date-time format for field: " + key);
+		}
+		return this;
 	}
-
 
 	public RequestValidator hasValidLongitude(String key) {
 		try {
@@ -293,146 +295,146 @@ public class RequestValidator {
 				throw new BadRequestException(key + " must be an array of integers.");
 			}
 			Integer employeeId = (Integer) obj;
-			if (employeeId <= 0) { 
+			if (employeeId <= 0) {
 				throw new BadRequestException("Invalid employee ID in " + key + ": ID must be a positive integer.");
 			}
 		}
 
 		return this;
 	}
-	
+
 	public RequestValidator hasValidTaskStatus(String key) {
-	    String value = getStringValue(key);
-	    
-	    if (value == null || value.isEmpty()) {
-	        throw new BadRequestException(key + " is missing!");
-	    }
-	    
-	    List<String> validStatuses = List.of("open", "closed", "pending");
-	    
-	    if (!validStatuses.contains(value.toLowerCase())) {
-	        throw new BadRequestException("Invalid " + key + "! Allowed values: open, closed, pending.");
-	    }
+		String value = getStringValue(key);
 
-	    return this;
+		if (value == null || value.isEmpty()) {
+			throw new BadRequestException(key + " is missing!");
+		}
+
+		List<String> validStatuses = List.of("open", "closed", "pending", "in-progress", "review");
+
+		if (!validStatuses.contains(value.toLowerCase())) {
+			throw new BadRequestException("Invalid " + key + "! Allowed values: open, closed, pending.");
+		}
+
+		return this;
 	}
+
 	public RequestValidator hasValidPriority(String key) {
-	    String value = getStringValue(key);
-	    
-	    if (value == null || value.isEmpty()) {
-	        throw new BadRequestException(key + " is missing!");
-	    }
+		String value = getStringValue(key);
 
-	    List<String> validPriorities = List.of("high", "medium", "low");
-	    
-	    if (!validPriorities.contains(value.toLowerCase())) {
-	        throw new BadRequestException("Invalid " + key + "! Allowed values: high, medium, low.");
-	    }
+		if (value == null || value.isEmpty()) {
+			throw new BadRequestException(key + " is missing!");
+		}
 
-	    return this;
+		List<String> validPriorities = List.of("high", "medium", "low");
+
+		if (!validPriorities.contains(value.toLowerCase())) {
+			throw new BadRequestException("Invalid " + key + "! Allowed values: high, medium, low.");
+		}
+
+		return this;
 	}
 
-	
 	public RequestValidator hasValidAssignBy(String key) {
-	    try {
-	        if (!entity.containsKey(key) || entity.get(key) == null || entity.get(key).toString().trim().isEmpty()) {
-	            throw new BadRequestException(key + " is missing!");
-	        }
+		try {
+			if (!entity.containsKey(key) || entity.get(key) == null || entity.get(key).toString().trim().isEmpty()) {
+				throw new BadRequestException(key + " is missing!");
+			}
 
-	        int assignBy = Integer.parseInt(entity.get(key).toString().trim());
+			// Accept a numeric employee ID (positive long). Detailed role-based
+			// permission checks should be performed at the service layer where
+			// repositories are available.
+			long assignById = Long.parseLong(entity.get(key).toString().trim());
 
-	        if (assignBy != 1 && assignBy != 2) {
-	            throw new BadRequestException("Invalid " + key + "! Only Admin (1) or HR (2) can create.");
-	        }
-	    } catch (NumberFormatException e) {
-	        throw new BadRequestException("Invalid " + key + "! Must be a numeric value (1 or 2).");
-	    }
+			if (assignById <= 0) {
+				throw new BadRequestException("Invalid " + key + "! Must be a positive numeric ID.");
+			}
+		} catch (NumberFormatException e) {
+			throw new BadRequestException("Invalid " + key + "! Must be a numeric value.");
+		}
 
-	    return this;
+		return this;
 	}
-	
+
 	public RequestValidator hasValidGroupLeader(String key) {
-	    try {
-	        if (!entity.containsKey(key) || entity.get(key) == null || entity.get(key).toString().trim().isEmpty()) {
-	            return this; // Allow null or empty value
-	        }
+		try {
+			if (!entity.containsKey(key) || entity.get(key) == null || entity.get(key).toString().trim().isEmpty()) {
+				return this; // Allow null or empty value
+			}
 
-	        // Validate if groupLeader is a valid numeric ID
-	        Long groupLeaderId = Long.parseLong(entity.get(key).toString().trim());
-	        if (groupLeaderId <= 0) {
-	            throw new BadRequestException("Invalid " + key + "! Must be a positive numeric ID.");
-	        }
-	    } catch (NumberFormatException e) {
-	        throw new BadRequestException("Invalid " + key + "! Must be a numeric value.");
-	    }
+			// Validate if groupLeader is a valid numeric ID
+			Long groupLeaderId = Long.parseLong(entity.get(key).toString().trim());
+			if (groupLeaderId <= 0) {
+				throw new BadRequestException("Invalid " + key + "! Must be a positive numeric ID.");
+			}
+		} catch (NumberFormatException e) {
+			throw new BadRequestException("Invalid " + key + "! Must be a numeric value.");
+		}
 
-	    return this;
+		return this;
 	}
 
+	public RequestValidator hasValidDate(String key) {
+		String value = getStringValue(key);
 
-public RequestValidator hasValidDate(String key) {
-    String value = getStringValue(key);
+		if (value == null || value.isEmpty()) {
+			throw new BadRequestException(key + " is missing!");
+		}
+		System.out.println("Received date: " + value); // Debugging line
 
-    if (value == null || value.isEmpty()) {
-        throw new BadRequestException(key + " is missing!");
-    }
-    System.out.println("Received date: " + value); // Debugging line
+		try {
+			LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);// Ensures the format is yyyy-MM-dd
 
-    try {
-    	LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);// Ensures the format is yyyy-MM-dd
- 
-    } catch (DateTimeParseException e) {
-        throw new BadRequestException("Invalid date format for " + key + "! Use yyyy-MM-dd.");
-    }
+		} catch (DateTimeParseException e) {
+			throw new BadRequestException("Invalid date format for " + key + "! Use yyyy-MM-dd.");
+		}
 
-    return this;
-}
-public RequestValidator hasValidParticipants(String key) {
-    Object valueObj = entity.get(key);
+		return this;
+	}
 
-    if (!(valueObj instanceof List<?>)) {
-        throw new BadRequestException("Participants should be a list!");
-    }
+	public RequestValidator hasValidParticipants(String key) {
+		Object valueObj = entity.get(key);
 
-    List<?> participants = (List<?>) valueObj;
-    List<String> validRoles = Arrays.asList(
-        "Frontend_Developer", "Backend_Developer", "Tester", 
-        "Manager", "Social_Media_Manager", "Video_Editor", 
-        "Graphic_Designer", "Videography","Photography"
-    );
+		if (!(valueObj instanceof List<?>)) {
+			throw new BadRequestException("Participants should be a list!");
+		}
 
-    for (Object obj : participants) {
-        if (!(obj instanceof Map)) {
-            throw new BadRequestException("Invalid participant format!");
-        }
+		List<?> participants = (List<?>) valueObj;
+		List<String> validRoles = Arrays.asList(
+				"Frontend_Developer", "Backend_Developer", "Tester",
+				"Manager", "Social_Media_Manager", "Video_Editor",
+				"Graphic_Designer", "Videography", "Photography");
 
-        Map<?, ?> participant = (Map<?, ?>) obj;
+		for (Object obj : participants) {
+			if (!(obj instanceof Map)) {
+				throw new BadRequestException("Invalid participant format!");
+			}
 
-        // Validate ID
-        if (!participant.containsKey("id") || participant.get("id") == null) {
-            throw new BadRequestException("Participant ID is missing!");
-        }
+			Map<?, ?> participant = (Map<?, ?>) obj;
 
-        try {
-            Integer.parseInt(participant.get("id").toString());
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("Invalid participant ID format! Must be an integer.");
-        }
+			// Validate ID
+			if (!participant.containsKey("id") || participant.get("id") == null) {
+				throw new BadRequestException("Participant ID is missing!");
+			}
 
-        // Validate Role
-        if (!participant.containsKey("role") || participant.get("role") == null) {
-            throw new BadRequestException("Participant role is missing!");
-        }
+			try {
+				Integer.parseInt(participant.get("id").toString());
+			} catch (NumberFormatException e) {
+				throw new BadRequestException("Invalid participant ID format! Must be an integer.");
+			}
 
-        String role = participant.get("role").toString();
-        if (!validRoles.contains(role)) {
-            throw new BadRequestException("Invalid role: " + role + ". Allowed roles: " + validRoles);
-        }
-    }
-    
-    return this;
-}
+			// Validate Role
+			if (!participant.containsKey("role") || participant.get("role") == null) {
+				throw new BadRequestException("Participant role is missing!");
+			}
 
+			String role = participant.get("role").toString();
+			if (!validRoles.contains(role)) {
+				throw new BadRequestException("Invalid role: " + role + ". Allowed roles: " + validRoles);
+			}
+		}
 
+		return this;
+	}
 
 }

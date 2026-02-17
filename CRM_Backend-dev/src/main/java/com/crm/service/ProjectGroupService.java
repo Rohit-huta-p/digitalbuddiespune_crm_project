@@ -43,6 +43,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import com.crm.model.dto.project.CreateProjectRequest;
+import com.crm.model.dto.project.ProjectDTO;
+import com.crm.model.dto.project.ProjectParticipantDTO;
+import com.crm.model.dto.project.UpdateTaskStatusRequest;
+import com.crm.model.dto.project.CreateTaskRequest;
+import com.crm.model.dto.project.AddParticipantRequest;
+import com.crm.model.dto.TokenInfo;
+import com.crm.model.dto.project.TaskDTO;
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,181 +77,195 @@ public class ProjectGroupService {
 
 	@Autowired
 	private ClientDetailsRepository clientDetailsRepository;
-	
+
 	@Autowired
 	private CompanyRepository companyRepository;
-	
+
 	@Autowired
 	private JwtBasedCurrentUserProvider basedCurrentUserProvider;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProjectGroupService.class);
 
-//	public ResponseEntity<ResponseDTO<Map<String, Object>>> createProjectGroup(Map<String, ?> request) {
-//	    // Create project group entity and set basic details
-//	    ProjectGroupDetails projectGroup = new ProjectGroupDetails();
-//	    projectGroup.setProjectName((String) request.get(Constants.PROJECT_NAME));
-//	    projectGroup.setProjectDesc((String) request.get(Constants.PROJECT_DESC));
-//	    projectGroup.setCreatedById(Long.parseLong(request.get(Constants.CREATED_BY_ID).toString()));
-//
-//	    String defaultStatus = "open"; // Default status when creating the group
-//	    projectGroup.setStatus(defaultStatus);
-//
-//	    // Get participant IDs from request
-//	    List<Long> participantIds = ((List<?>) request.get(Constants.PARTICIPANTS)).stream()
-//	            .map(p -> Long.parseLong(p.toString()))
-//	            .collect(Collectors.toList());
-//
-//	    // Get client details
-//	    Long clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
-//	    ClientDetails client = clientDetailsRepository.findById(clientId)
-//	            .orElseThrow(() -> new NotFoundException("Client with ID " + clientId + " not found"));
-//	    projectGroup.setClient(client);
-//
-//	    // Validate and set multiple group leaders
-//	    List<Long> groupLeaderIds = ((List<?>) request.get(Constants.GROUPLEADER_ID)).stream()
-//	            .map(gl -> Long.parseLong(gl.toString()))
-//	            .collect(Collectors.toList());
-//
-//	    // Ensure all group leaders are also part of the participants list
-//	    if (!participantIds.containsAll(groupLeaderIds)) {
-//	        throw new NotFoundException("All Group Leaders must be in the participants list");
-//	    }
-//
-//	    // Fetch and validate group leaders (Using individual retrieval approach)
-//	    List<Employee> groupLeaders = new ArrayList<>();
-//	    for (Long groupLeaderId : groupLeaderIds) {
-//	        Employee leader = employeeRepo.findById(groupLeaderId)
-//	                .orElseThrow(() -> new NotFoundException("Group Leader with ID " + groupLeaderId + " not found"));
-//	        groupLeaders.add(leader);
-//	    }
-//	    projectGroup.setGroupLeaders(groupLeaders);
-//
-//	    // Fetch and validate participants (Using individual retrieval approach)
-//	    List<Employee> participants = new ArrayList<>();
-//	    for (Long participantId : participantIds) {
-//	        Employee employee = employeeRepo.findById(participantId)
-//	                .orElseThrow(() -> new NotFoundException("Employee with ID " + participantId + " not found"));
-//	        participants.add(employee);
-//	    }
-//	    projectGroup.setParticipants(participants);
-//
-//	    // Save project group
-//	    projectGroup = projectGroupRepository.save(projectGroup);
-//	    
-//	    // Send notifications to participants
-//	    for (Long participantId : participantIds) {
-//	        Map<String, Object> notificationRequest = new HashMap<>();
-//	        notificationRequest.put(Keys.ID, participantId);
-//	        notificationRequest.put(Constants.FIELD_NOTIFICATION_TITLE, "Group Created: " + projectGroup.getProjectName());
-//	        notificationRequest.put(Constants.FIELD_NOTIFICATION_TEXT, projectGroup.getProjectDesc());
-//	        notificationService.createNotification(notificationRequest);
-//	    }
-//
-//	    // Response
-//	    Map<String, Object> responseAttributes = new HashMap<>();
-//	    responseAttributes.put("Message", "Project Group created successfully");
-//	    ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-//	    responseDTO.setAttributes(responseAttributes);
-//
-//	    return ResponseEntity.ok(responseDTO);
-//	}
+	// public ResponseEntity<ResponseDTO<Map<String, Object>>>
+	// createProjectGroup(Map<String, ?> request) {
+	// // Create project group entity and set basic details
+	// ProjectGroupDetails projectGroup = new ProjectGroupDetails();
+	// projectGroup.setProjectName((String) request.get(Constants.PROJECT_NAME));
+	// projectGroup.setProjectDesc((String) request.get(Constants.PROJECT_DESC));
+	// projectGroup.setCreatedById(Long.parseLong(request.get(Constants.CREATED_BY_ID).toString()));
+	//
+	// String defaultStatus = "open"; // Default status when creating the group
+	// projectGroup.setStatus(defaultStatus);
+	//
+	// // Get participant IDs from request
+	// List<Long> participantIds = ((List<?>)
+	// request.get(Constants.PARTICIPANTS)).stream()
+	// .map(p -> Long.parseLong(p.toString()))
+	// .collect(Collectors.toList());
+	//
+	// // Get client details
+	// Long clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
+	// ClientDetails client = clientDetailsRepository.findById(clientId)
+	// .orElseThrow(() -> new NotFoundException("Client with ID " + clientId + " not
+	// found"));
+	// projectGroup.setClient(client);
+	//
+	// // Validate and set multiple group leaders
+	// List<Long> groupLeaderIds = ((List<?>)
+	// request.get(Constants.GROUPLEADER_ID)).stream()
+	// .map(gl -> Long.parseLong(gl.toString()))
+	// .collect(Collectors.toList());
+	//
+	// // Ensure all group leaders are also part of the participants list
+	// if (!participantIds.containsAll(groupLeaderIds)) {
+	// throw new NotFoundException("All Group Leaders must be in the participants
+	// list");
+	// }
+	//
+	// // Fetch and validate group leaders (Using individual retrieval approach)
+	// List<Employee> groupLeaders = new ArrayList<>();
+	// for (Long groupLeaderId : groupLeaderIds) {
+	// Employee leader = employeeRepo.findById(groupLeaderId)
+	// .orElseThrow(() -> new NotFoundException("Group Leader with ID " +
+	// groupLeaderId + " not found"));
+	// groupLeaders.add(leader);
+	// }
+	// projectGroup.setGroupLeaders(groupLeaders);
+	//
+	// // Fetch and validate participants (Using individual retrieval approach)
+	// List<Employee> participants = new ArrayList<>();
+	// for (Long participantId : participantIds) {
+	// Employee employee = employeeRepo.findById(participantId)
+	// .orElseThrow(() -> new NotFoundException("Employee with ID " + participantId
+	// + " not found"));
+	// participants.add(employee);
+	// }
+	// projectGroup.setParticipants(participants);
+	//
+	// // Save project group
+	// projectGroup = projectGroupRepository.save(projectGroup);
+	//
+	// // Send notifications to participants
+	// for (Long participantId : participantIds) {
+	// Map<String, Object> notificationRequest = new HashMap<>();
+	// notificationRequest.put(Keys.ID, participantId);
+	// notificationRequest.put(Constants.FIELD_NOTIFICATION_TITLE, "Group Created: "
+	// + projectGroup.getProjectName());
+	// notificationRequest.put(Constants.FIELD_NOTIFICATION_TEXT,
+	// projectGroup.getProjectDesc());
+	// notificationService.createNotification(notificationRequest);
+	// }
+	//
+	// // Response
+	// Map<String, Object> responseAttributes = new HashMap<>();
+	// responseAttributes.put("Message", "Project Group created successfully");
+	// ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+	// responseDTO.setAttributes(responseAttributes);
+	//
+	// return ResponseEntity.ok(responseDTO);
+	// }
 
-	@SuppressWarnings("unused")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> createProjectGroup(Map<String, ?> request) {
-		
-		Long companyId1=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		if(companyId1!=requestCompanyId)
-		{
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
-		
-		ObjectMapper objectMapper = new ObjectMapper();
-		 Long companyId = null;
-		companyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		
-		Companys company = companyRepository.findByCompanyId(companyId)
-	            .orElseThrow(() -> new NotFoundException("Company ID not found"));
-		// Create project group entity and set basic details
-		ProjectGroupDetails projectGroup = new ProjectGroupDetails();
-		projectGroup.setProjectName((String) request.get(Constants.PROJECT_NAME));
-		projectGroup.setProjectDesc((String) request.get(Constants.PROJECT_DESC));
-		projectGroup.setCreatedById(Long.parseLong(request.get(Constants.CREATED_BY_ID).toString()));
-		projectGroup.setStatus("open"); // Default status when creating the group
-		projectGroup.setCompanyId(company.getCompanyId());
-		// Fetch client details
-		Long clientId = null;
-		if (request.containsKey(Constants.CLIENT_ID) && request.get(Constants.CLIENT_ID) != null) {
-			clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
-		}
+	public ProjectDTO createProject(CreateProjectRequest request) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Companys company = companyRepository.findById(companyId)
+				.orElseThrow(() -> new NotFoundException("Company not found"));
 
-		if (clientId != null) {
-			ClientDetails client = clientDetailsRepository.findById(clientId)
-					.orElseThrow(() -> new NotFoundException("Client  ID not found"));
-			projectGroup.setClient(client);
-		} else {
-			projectGroup.setClient(null);
+		ProjectGroupDetails project = new ProjectGroupDetails();
+		project.setProjectName(request.getProjectName());
+		project.setProjectDesc(request.getProjectDesc());
+		project.setCreatedById(request.getCreatedById());
+		project.setStatus("open");
+		project.setCompanyId(companyId);
+
+		if (request.getClientId() != null) {
+			ClientDetails client = clientDetailsRepository.findById(request.getClientId())
+					.orElseThrow(() -> new NotFoundException("Client not found"));
+			project.setClient(client);
 		}
 
-		// Save project group first to avoid transient entity issues
-		ProjectGroupDetails savedProjectGroup = projectGroupRepository.save(projectGroup);
+		ProjectGroupDetails savedProject = projectGroupRepository.save(project);
 
-		// Fetch and validate group leaders
-		List<Long> groupLeaderIds = ((List<?>) request.get(Constants.GROUPLEADER_ID)).stream()
-				.map(gl -> Long.parseLong(gl.toString())).collect(Collectors.toList());
-		List<Employee> groupLeaders = employeeRepo.findAllById(groupLeaderIds);
+		List<Employee> groupLeaders = employeeRepo.findAllById(request.getGroupLeaderIds());
+		if (groupLeaders.size() != request.getGroupLeaderIds().size()) {
+			throw new NotFoundException("Some group leaders not found");
+		}
 
-		// Parse participants (ID + role) from request
-		 List<ProjectParticipant> projectParticipants = ((List<?>) request.get(Constants.PARTICIPANTS)).stream()
-		            .map(participantData -> objectMapper.convertValue(participantData, ProjectParticipant.class))
-		            .map(participant -> {
-		                Employee employee = employeeRepo.findById(participant.getId())
-		                        .orElseThrow(() -> new NotFoundException("Employee with ID " + participant.getId() + " not found"));
+		List<ProjectParticipant> participants = request.getParticipants().stream().map(pRequest -> {
+			Employee employee = employeeRepo.findById(pRequest.getId())
+					.orElseThrow(() -> new NotFoundException("Employee " + pRequest.getId() + " not found"));
 
-		                ProjectParticipant projectParticipant = new ProjectParticipant();
-		                projectParticipant.setProjectGroup(savedProjectGroup);
-		                projectParticipant.setEmployee(employee);
-		                projectParticipant.setRole(participant.getRole());
+			ProjectParticipant participant = new ProjectParticipant();
+			participant.setProjectGroup(savedProject);
+			participant.setEmployee(employee);
+			participant.setRole(pRequest.getRole());
+			return participant;
+		}).collect(Collectors.toList());
 
-		                return projectParticipant;
-		            }).collect(Collectors.toList());
-
-		// Ensure all group leaders are also participants
+		// Validate leaders are participants
 		for (Employee leader : groupLeaders) {
-			boolean isParticipant = projectParticipants.stream()
-					.anyMatch(pp -> Long.valueOf(pp.getEmployee().getId()).equals(leader.getId()));
+			boolean isParticipant = participants.stream()
+					.anyMatch(p -> p.getEmployee().getId() == leader.getId());
 			if (!isParticipant) {
-				throw new NotFoundException("Group Leader " + leader.getId() + " must be in the participants list");
+				throw new com.crm.exception.BadRequestException(
+						"Group Leader " + leader.getName() + " must be a participant");
 			}
 		}
 
-		// Associate group leaders & participants **before saving again**
-		savedProjectGroup.setGroupLeaders(groupLeaders);
-		savedProjectGroup.setParticipants(projectParticipants);
+		savedProject.setGroupLeaders(groupLeaders);
+		savedProject.setParticipants(participants);
 
-		// Save project group **only once** after setting all associations
-		projectGroupRepository.save(savedProjectGroup);
-		
-		participantRepository.saveAll(projectParticipants);
-		// No need to call `participantRepository.saveAll(projectParticipants);`
+		projectGroupRepository.save(savedProject);
+		participantRepository.saveAll(participants); // Explicit save might be needed if cascade not set
 
-		// Send notifications to participants
-		for (ProjectParticipant participant : projectParticipants) {
+		// Notifications
+		participants.forEach(p -> {
 			Map<String, Object> notificationRequest = new HashMap<>();
-			notificationRequest.put(Keys.ID, participant.getEmployee().getId());
+			notificationRequest.put(Keys.ID, p.getEmployee().getId());
 			notificationRequest.put(Constants.FIELD_NOTIFICATION_TITLE,
-					"Group Created: " + savedProjectGroup.getProjectName());
-			notificationRequest.put(Constants.FIELD_NOTIFICATION_TEXT, savedProjectGroup.getProjectDesc());
-			notificationService.createNotification(notificationRequest);
+					"Group Created: " + savedProject.getProjectName());
+			notificationRequest.put(Constants.FIELD_NOTIFICATION_TEXT, savedProject.getProjectDesc());
+			try {
+				notificationService.createNotification(notificationRequest);
+			} catch (Exception e) {
+				LOGGER.error("Failed to send notification", e);
+			}
+		});
+
+		return mapToProjectDTO(savedProject);
+	}
+
+	private ProjectDTO mapToProjectDTO(ProjectGroupDetails project) {
+		ProjectDTO dto = new ProjectDTO();
+		dto.setId(project.getProjectId());
+		dto.setName(project.getProjectName());
+		dto.setDescription(project.getProjectDesc());
+		dto.setStatus(project.getStatus());
+		dto.setCompanyId(project.getCompanyId());
+		dto.setCreatedBy(project.getCreatedById());
+		dto.setCreatedAt(project.getCreatedAt());
+
+		if (project.getClient() != null) {
+			dto.setClientId(project.getClient().getClientId());
+			dto.setClientName(project.getClient().getName());
 		}
 
-		// Prepare response
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("Message", "Project Group created successfully");
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
+		dto.setGroupLeaderIds(project.getGroupLeaders().stream().map(Employee::getId).collect(Collectors.toList()));
 
-		return ResponseEntity.ok(responseDTO);
+		dto.setParticipants(project.getParticipants().stream().map(p -> {
+			ProjectParticipantDTO pDto = new ProjectParticipantDTO();
+			pDto.setId(p.getEmployee().getId());
+			pDto.setName(p.getEmployee().getName());
+			pDto.setRole(p.getRole());
+			pDto.setMobile(p.getEmployee().getMobile());
+			pDto.setEmail(p.getEmployee().getEmail());
+			return pDto;
+		}).collect(Collectors.toList()));
+
+		return dto;
 	}
 
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> scheduleTask(Map<String, ?> request) {
@@ -250,14 +273,12 @@ public class ProjectGroupService {
 		Long projectGroupId = Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
 		ProjectGroupDetails projectGroup = projectGroupRepository.findById(projectGroupId)
 				.orElseThrow(() -> new NotFoundException("Project Group not found"));
-		Long requestCompanyId=projectGroup.getCompanyId();
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		if(requestCompanyId!=companyId)
-		{
+		Long requestCompanyId = projectGroup.getCompanyId();
+		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
+		if (requestCompanyId != companyId) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		
-		
+
 		// Get task details
 		@SuppressWarnings("unchecked")
 		List<Map<String, ?>> taskList = (List<Map<String, ?>>) request.get("tasks");
@@ -274,7 +295,7 @@ public class ProjectGroupService {
 			task.setDeadlineTimestamp(LocalDateTime.parse((String) taskData.get(Constants.FIELD_DEADLINE_TIMESTAMP)));
 			task.setStatus("pending");
 			task.setCompanyId(requestCompanyId);
-			task.setPriority((String)taskData.get(Constants.PRIORITY));
+			task.setPriority((String) taskData.get(Constants.PRIORITY));
 
 			// Validate assignedBy (Must be Group Leader)
 			Long assignedById = Long.parseLong(taskData.get(Constants.FIELD_ASSIGNED_BY).toString());
@@ -331,147 +352,76 @@ public class ProjectGroupService {
 		return ResponseEntity.ok(responseDTO);
 	}
 
-	public void updateTaskStatus(Map<String, ?> request) {
+	public void updateTaskStatus(UpdateTaskStatusRequest request) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+		Long userRole = tokenInfo.getRole(); // 1: ADMIN, 2: EXECUTIVE, 3: EMPLOYEE, 4: CLIENT
 
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
+		Task task = taskRepository.findById(request.getTaskId())
+				.orElseThrow(() -> new NotFoundException("Task not found"));
+
+		if (!task.getCompanyId().equals(companyId)) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		
-		Long employeeId = Long.parseLong(request.get("employee_id").toString());
-		Long taskId = Long.parseLong(request.get("taskId").toString());
 
-		Task task = taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found"));
+		// Check permissions: Assigned, Creator, Group Leader, OR ADMIN/EXECUTIVE
+		boolean isAssigned = task.getAssignedEmployees().stream()
+				.anyMatch(e -> e.getId() == userId);
+		boolean isCreator = task.getProjectGroup().getCreatedById().equals(userId);
+		boolean isLeader = task.getProjectGroup().getGroupLeaders().stream()
+				.anyMatch(e -> e.getId() == userId);
+		boolean isAdminOrExecutive = (userRole.intValue() == 1 || userRole.intValue() == 2);
 
-		if (!task.getAssignedEmployees().stream().anyMatch(e -> Long.valueOf(e.getId()).equals(employeeId))) {
-			throw new ForBiddenException("You are not assigned to this task");
+		if (!isAssigned && !isCreator && !isLeader && !isAdminOrExecutive) {
+			throw new ForBiddenException("You are not authorized to update this task");
 		}
 
-		ProjectGroupDetails projectGroup = task.getProjectGroup();
-		List<Task> tasks = projectGroup.getScheduleTask();
-
-		int currentTaskIndex = tasks.indexOf(task);
-
-		// Ensure the first task is completed before allowing updates to any other task
-		if (currentTaskIndex > 0) { // If the current task is not the first one
-			Task previousTask = tasks.get(currentTaskIndex - 1);
-			if (previousTask.getStatus() == null || !"closed".equalsIgnoreCase(previousTask.getStatus())) {
-				throw new ForBiddenException("The previous task must be completed before updating this task.");
-			}
-		}
-
-		String status = (String) request.get("status");
+		String status = request.getStatus();
 		task.setStatus(status);
-		task.setCompletionTime(LocalDateTime.now());
+
+		if ("closed".equalsIgnoreCase(status)) {
+			task.setCompletionTime(LocalDateTime.now());
+		} else {
+			task.setCompletionTime(null);
+		}
+
 		taskRepository.save(task);
-
-		int next = currentTaskIndex + 1;
-
-		// Ensure there is a next task before updating its status
-		if (next < tasks.size()) {
-			Task nextTask = tasks.get(next);
-			nextTask.setStatus("open"); // Only change the next task's status
-			taskRepository.save(nextTask);
-			// Notify next task's assigned employees
-
-//	        for (Employee assignedEmployee : nextTask.getAssignedEmployees()) {
-//	            String message = "Task '" + task.getTaskName() + "' has been completed by Employee ID: " + employeeId 
-//	                + ". Your task has now been opened.";
-//
-//	            Map<String, Object> notificationRequest = Map.of(
-//	                    Keys.ID, assignedEmployee.getId(),
-//	                    Constants.FIELD_NOTIFICATION_TITLE, "Task Update",
-//	                    Constants.FIELD_NOTIFICATION_TEXT, message
-//	            );
-//
-//	            notificationService.createNotification(notificationRequest);
-//	            emailService.sendEmail(assignedEmployee.getEmail(), "Task Assignment Update", message);
-//	        }
-		}
-
-		boolean deadlineAdjusted = false;
-
-		// Adjust deadlines for subsequent tasks if the task was completed early
-		if (task.getCompletionTime().isBefore(task.getDeadlineTimestamp())) {
-			long daysSaved = ChronoUnit.DAYS.between(task.getCompletionTime(), task.getDeadlineTimestamp());
-
-			// Adjust the deadlines for all subsequent tasks (starting from the next task)
-			for (int i = currentTaskIndex + 1; i < tasks.size(); i++) {
-				Task nextTask = tasks.get(i);
-
-				// Adjust the deadline by subtracting the days saved
-				nextTask.setDeadlineTimestamp(nextTask.getDeadlineTimestamp().minusDays(daysSaved));
-
-				// Save the updated task with the new deadline
-				taskRepository.save(nextTask);
-
-				// Notify next task's assigned employees
-				for (Employee assignedEmployee : nextTask.getAssignedEmployees()) {
-					final String message = "Task '" + task.getTaskName() + "' has been completed by Employee ID: "
-							+ employeeId + ". The deadline for your task has been adjusted." + ". New deadline: "
-							+ nextTask.getDeadlineTimestamp();
-
-					Map<String, Object> notificationRequest = Map.of(Keys.ID, assignedEmployee.getId(),
-							Constants.FIELD_NOTIFICATION_TITLE, "Task Update", Constants.FIELD_NOTIFICATION_TEXT,
-							message);
-
-					notificationService.createNotification(notificationRequest);
-					CompletableFuture.runAsync(() -> emailService.sendEmail(assignedEmployee.getEmail(),
-							"Task Assignment Update", message));
-
-				}
-
-			}
-
-			deadlineAdjusted = true; // Mark that the deadline has been adjusted
-		}
-
-		// If the deadline was not adjusted (completed on time), still notify employees
-		if (!deadlineAdjusted) {
-
-			for (int i = currentTaskIndex + 1; i < tasks.size(); i++) {
-				Task nextTask = tasks.get(i);
-
-				// Notify next task's assigned employees (even if deadline is not changed)
-				for (Employee assignedEmployee : nextTask.getAssignedEmployees()) {
-					String message = "Task '" + task.getTaskName() + "' has been completed by Employee ID: "
-							+ employeeId + ". The task has been completed on time.";
-
-					Map<String, Object> notificationRequest = Map.of(Keys.ID, assignedEmployee.getId(),
-							Constants.FIELD_NOTIFICATION_TITLE, "Task Update", Constants.FIELD_NOTIFICATION_TEXT,
-							message);
-					notificationService.createNotification(notificationRequest);
-
-					emailService.sendEmail(assignedEmployee.getEmail(), "Task Assignment Update", message);
-				}
-
-			}
-
-		}
-
 	}
 
-	public void deleteProjectGroup(Long projectGroupId,Map<String,?>request) {
-		
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
-		// Fetch project group details
+	public void deleteProjectGroup(Long projectGroupId) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+
 		ProjectGroupDetails projectGroup = projectGroupRepository.findById(projectGroupId)
 				.orElseThrow(() -> new NotFoundException("Project group not found"));
 
+		if (!projectGroup.getCompanyId().equals(companyId)) {
+			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
+		}
+
+		// Only creator or Admin can delete? Existing logic:
+		// Long employeeId = Long.parseLong(request.get("employee_id").toString());
+		// if (!projectGroup.getCreatedById().equals(employeeId)) { throw ... }
+
+		// New Logic: Check if User is Creator OR Admin/Executive
+		boolean isCreator = projectGroup.getCreatedById().equals(userId);
+		Long userRole = tokenInfo.getRole();
+		boolean isAdminOrExecutive = (userRole != null && (userRole == 1 || userRole == 2)); // 1=Admin, 2=Executive
+
+		if (!isCreator && !isAdminOrExecutive) {
+			throw new ForBiddenException("You are not authorized to delete this project group");
+		}
+
 		// Delete associated tasks first
 		List<Task> tasks = taskRepository.findByProjectGroup(projectGroup);
-//		for (Task task : tasks) {
-//			if (!"closed".equalsIgnoreCase(task.getStatus())) {
-//				throw new ForBiddenException("All tasks must be closed before deleting the project group.");
-//			}
-//		}
+		// for (Task task : tasks) {
+		// if (!"closed".equalsIgnoreCase(task.getStatus())) {
+		// throw new ForBiddenException("All tasks must be closed before deleting the
+		// project group.");
+		// }
+		// }
 		taskRepository.deleteAll(tasks);
 
 		ClientDetails client = projectGroup.getClient();
@@ -484,24 +434,32 @@ public class ProjectGroupService {
 		projectGroupRepository.delete(projectGroup);
 	}
 
-	public void deleteTask(Long projectGroupId, Long taskId,Map<String,?>request) {
-		
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
+	public void deleteTask(Long taskId) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+		Long userRole = tokenInfo.getRole();
+
+		Task task = taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found"));
+		ProjectGroupDetails projectGroup = task.getProjectGroup();
+
+		if (!task.getCompanyId().equals(companyId)) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		// Fetch project group details
-		ProjectGroupDetails projectGroup = projectGroupRepository.findById(projectGroupId)
-				.orElseThrow(() -> new NotFoundException("Project group not found"));
 
-		// Fetch task details
-		Task task = taskRepository.findById(taskId).orElseThrow(() -> new NotFoundException("Task not found"));
+		// Permissions: Creator, Leader, Admin/Executive, OR Assigned User?
+		// Typically, deletion is restricted to Admins/Leaders/Creators.
+		boolean isCreator = projectGroup.getCreatedById().equals(userId);
+		boolean isLeader = projectGroup.getGroupLeaders().stream()
+				.anyMatch(e -> e.getId() == userId);
+		boolean isAdminOrExecutive = (userRole != null && (userRole == 1 || userRole == 2));
 
-		// Check if the task belongs to the project group
-		if (!task.getProjectGroup().getProjectId().equals(projectGroupId)) {
-			throw new ForBiddenException("Task does not belong to the specified project group");
+		// Also allow the user who ASSIGNED the task if that's tracked
+		// (task.getAssignedBy())
+		boolean isAssigner = task.getAssignedBy() != null && task.getAssignedBy().equals(userId);
+
+		if (!isCreator && !isLeader && !isAdminOrExecutive && !isAssigner) {
+			throw new ForBiddenException("You are not authorized to delete this task");
 		}
 
 		// Check if the task is completed
@@ -512,216 +470,103 @@ public class ProjectGroupService {
 		// Delete the task
 		taskRepository.delete(task);
 
+		// Optional: Remove from project list explicitly if bidirectional relationship
+		// management is needed,
+		// but JPA/Hibernate usually handles this if mapped correctly or we modify the
+		// list and save project.
+		// The original code did: projectGroup.getScheduleTask().remove(task);
+		// projectGroupRepository.save(projectGroup);
+		// This is safe to keep or rely on CascadeType.ALL + orphanRemoval=true (which
+		// ProjectGroupDetails has).
+		// If orphanRemoval=true, removing from list and saving ProjectGroup would match
+		// `delete`.
+		// But direct `taskRepository.delete(task)` is also fine if `projectGroup` is
+		// not re-saved with the stale list in the same transaction.
+		// To be safe and consistent with previous logic:
 		projectGroup.getScheduleTask().remove(task);
 		projectGroupRepository.save(projectGroup);
 	}
 
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllProjects(Integer pageNum, Integer pageSize,Map<String,?>request) {
-		
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
+	public Page<ProjectDTO> getAllProjects(Pageable pageable, String status) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+
+		Page<ProjectGroupDetails> projectsPage;
+		if (status != null && !status.isEmpty()) {
+			projectsPage = projectGroupRepository.findByCompanyIdAndStatus(companyId, status, pageable);
+		} else {
+			projectsPage = projectGroupRepository.findByCompanyId(companyId, pageable);
 		}
-		
-		Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Order.desc("createdAt")));
-		Page<ProjectGroupDetails> projectsPage = projectGroupRepository.findByCompanyId(requestCompanyId,pageable);
 
-		List<Map<String, Object>> responseProjects = projectsPage.getContent().stream().map(project -> {
-			Map<String, Object> projectData = new HashMap<>();
-			projectData.put("projectGroupId", project.getProjectId());
-			projectData.put("projectName", project.getProjectName());
-			projectData.put("createdById", project.getCreatedById());
-			projectData.put("createdAt", project.getCreatedAt());
-			projectData.put("projectDesc", project.getProjectDesc());
-			projectData.put(Constants.COMPANY_ID, project.getCompanyId());
-			
-//		ClientDetails clientDetails=project.getClient();
-//		projectData.put(Constants.CLIENT_ID, clientDetails.getClientId());
-			// Extracting participant details
-	        List<Map<String, Object>> participantDetails = project.getParticipants().stream().map(participant -> {
-	            Map<String, Object> participantData = new HashMap<>();
-	            Employee emp = participant.getEmployee();
-	            participantData.put("id", String.valueOf(emp.getId()));
-	            participantData.put("name", emp.getName());
-	            participantData.put("role", participant.getRole());
-	            participantData.put("phone", emp.getMobile());
-	            return participantData;
-	        }).collect(Collectors.toList());
-
-	        projectData.put("participants", participantDetails);
-			
-			// Extracting group leader IDs
-		    List<Long> groupLeaderIds = project.getGroupLeaders().stream()
-		            .map(Employee::getId)
-		            .collect(Collectors.toList());
-		    projectData.put("groupLeaderIds", groupLeaderIds);
-			projectData.put("status", project.getStatus());
-			return projectData;
-		}).collect(Collectors.toList());
-
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("projects", responseProjects);
-		responseAttributes.put("totalProjects", projectsPage.getTotalElements());
-		responseAttributes.put("totalPages", projectsPage.getTotalPages());
-		responseAttributes.put("currentPage", projectsPage.getNumber() + 1);
-
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-		return ResponseEntity.ok(responseDTO);
+		return projectsPage.map(this::mapToProjectDTO);
 	}
 
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getProjectById(Map<String, ?> entity) {
-		
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(entity.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
+	public ProjectDTO getProjectById(Long projectId) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
 
-		Long projectId = Long.parseLong(entity.get(Constants.PROJECT_GROUPID).toString());
-		
-		// Fetching the project details
 		ProjectGroupDetails project = projectGroupRepository.findById(projectId)
-				.orElseThrow(() -> new NotFoundException("Project with ID " + projectId + " not found."));
-		
-		if(project.getCompanyId()!=requestCompanyId)
-		{
+				.orElseThrow(() -> new NotFoundException("Project not found"));
+
+		if (!project.getCompanyId().equals(companyId)) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		// Get all tasks related to this project
-		List<Task> tasks = taskRepository.findByProjectGroup(project);
 
-		// Map tasks to a list of task details
-		List<Map<String, Object>> responseTasks = tasks.stream().map(task -> {
-			Map<String, Object> taskData = new HashMap<>();
-			taskData.put("taskId", task.getId());
-			taskData.put("taskName", task.getTaskName());
-			List<Long> assignedEmployeeIds = task.getAssignedEmployees().stream().map(employee -> employee.getId()) // Get
-																													// employee
-																													// ID
-					.collect(Collectors.toList());
-			taskData.put("assignedEmployees", assignedEmployeeIds);
-			taskData.put("assignedBy", task.getAssignedBy());
-			taskData.put("description", task.getDescription());
-			taskData.put("deadlineTimestamp", task.getDeadlineTimestamp());
-			taskData.put("status", task.getStatus());
-			taskData.put("priority", task.getPriority());
-			taskData.put(Constants.FIELD_ASSIGNED_TIMESTAMP, task.getAssignedTimestamp());
-			return taskData;
-		}).collect(Collectors.toList());
-		
-		  // Extracting participant details
-	    List<Map<String, Object>> participantDetails = project.getParticipants().stream().map(participant -> {
-	        Map<String, Object> participantData = new HashMap<>();
-	        Employee emp = participant.getEmployee();
-	        participantData.put("id", String.valueOf(emp.getId()));
-	        participantData.put("name", emp.getName());
-	        participantData.put("role", participant.getRole());
-	        participantData.put("phone", emp.getMobile());
-	        return participantData;
-	    }).collect(Collectors.toList());
-		
+		// Ideally, we shouldn't return tasks here if we have a separate endpoint for
+		// tasks.
+		// But for backward compatibility or convenience, we might want to.
+		// The DTO I created `ProjectDTO` does NOT have a list of Tasks.
+		// So I will just return the Project details.
 
-	    // Extracting group leader IDs
-	    List<Long> groupLeaderIds = project.getGroupLeaders().stream()
-	            .map(Employee::getId)
-	            .collect(Collectors.toList());
-		// Preparing the response with project details and related tasks
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("projectGroupId", project.getProjectId());
-		responseAttributes.put("projectName", project.getProjectName());
-		responseAttributes.put("createdById", project.getCreatedById());
-		responseAttributes.put("projectDesc", project.getProjectDesc());
-		responseAttributes.put("createdAt", project.getCreatedAt());
-		responseAttributes.put("groupLeaderIds", groupLeaderIds);
-		responseAttributes.put("participants", participantDetails);
-		responseAttributes.put("status", project.getStatus());
-		responseAttributes.put("tasks", responseTasks);
-		responseAttributes.put(Constants.COMPANY_ID, project.getCompanyId());
-//		ClientDetails clientDetails=project.getClient();
-//		responseAttributes.put(Constants.CLIENT_ID, clientDetails.getClientId());
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-
-		return ResponseEntity.ok(responseDTO);
+		return mapToProjectDTO(project);
 	}
 
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getTasksByProjectId(Map<String, ?> entity, Integer pageNum,
-			Integer pageSize) {
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(entity.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
-		
-		Long projectId = Long.parseLong(entity.get(Constants.PROJECT_GROUPID).toString());
+	public Page<TaskDTO> getTasksByProjectId(Long projectId, Pageable pageable) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
 
-		
-		// Check if project exists
 		ProjectGroupDetails project = projectGroupRepository.findById(projectId)
-				.orElseThrow(() -> new NotFoundException("Project with ID " + projectId + " not found."));
+				.orElseThrow(() -> new NotFoundException("Project not found"));
 
-		if(project.getCompanyId()!=requestCompanyId)
-		{
+		if (!project.getCompanyId().equals(companyId)) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		// Pagination setup
-		Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Order.desc("deadlineTimestamp")));
+
 		Page<Task> tasksPage = taskRepository.findByProjectGroup_ProjectId(projectId, pageable);
+		return tasksPage.map(this::mapToTaskDTO);
+	}
 
-		// Transform tasks into response format
-		List<Map<String, Object>> responseTasks = tasksPage.getContent().stream().map(task -> {
-			Map<String, Object> taskData = new HashMap<>();
-			taskData.put("taskId", task.getId());
-			taskData.put("taskName", task.getTaskName());
-			taskData.put("status", task.getStatus());
-			taskData.put("deadlineTimestamp", task.getDeadlineTimestamp());
-			taskData.put("description", task.getDescription());
-			taskData.put("assignedBy", task.getAssignedBy());
-			taskData.put("priority", task.getPriority());
-			taskData.put(Constants.FIELD_ASSIGNED_TIMESTAMP, task.getAssignedTimestamp());
-			// Extracting only employee IDs from assigned employees
-			List<Long> assignedEmployeeIds = task.getAssignedEmployees().stream().map(Employee::getId) // Only get
-																										// employee ID
-					.collect(Collectors.toList());
-			taskData.put("assignedEmployees", assignedEmployeeIds);
-
-			return taskData;
-		}).collect(Collectors.toList());
-
-		// Preparing response with pagination
-		Map<String, Object> responseAttributes = new HashMap<>();
-
-		responseAttributes.put("tasks", responseTasks);
-		responseAttributes.put("totalTasks", tasksPage.getTotalElements());
-		responseAttributes.put("totalPages", tasksPage.getTotalPages());
-		responseAttributes.put("currentPage", tasksPage.getNumber() + 1);
-
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-
-		return ResponseEntity.ok(responseDTO);
+	private TaskDTO mapToTaskDTO(Task task) {
+		TaskDTO dto = new TaskDTO();
+		dto.setId(task.getId());
+		dto.setName(task.getTaskName());
+		dto.setDescription(task.getDescription());
+		dto.setStatus(task.getStatus());
+		dto.setPriority(task.getPriority());
+		dto.setDeadline(task.getDeadlineTimestamp());
+		dto.setAssignedAt(task.getAssignedTimestamp());
+		dto.setCompletedAt(task.getCompletionTime());
+		dto.setAssignedBy(task.getAssignedBy());
+		dto.setProjectId(task.getProjectGroup().getProjectId());
+		dto.setAssignedEmployeeIds(
+				task.getAssignedEmployees().stream().map(Employee::getId).collect(Collectors.toList()));
+		return dto;
 	}
 
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> getTasksByEmployeeAndProject(Long employeeId,
-			Long projectId,Map<String,?>request) {
-		
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
+			Long projectId, Map<String, ?> request) {
+
+		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
+		Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
+
+		if (companyId != requestCompanyId) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
 		// Check if the project exists
 		ProjectGroupDetails project = projectGroupRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Project with ID " + projectId + " not found."));
 
-		if(project.getCompanyId()!=requestCompanyId)
-		{
+		if (project.getCompanyId() != requestCompanyId) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
 		// Check if the employee is part of the project group
@@ -756,7 +601,7 @@ public class ProjectGroupService {
 			taskData.put("assignedBy", task.getAssignedBy());
 			taskData.put("priority", task.getPriority());
 			taskData.put(Constants.FIELD_ASSIGNED_TIMESTAMP, task.getAssignedTimestamp());
-			
+
 			// Extract only employee IDs from assigned employees
 			List<Long> assignedEmployeeIds = task.getAssignedEmployees().stream().map(Employee::getId) // Only get
 																										// employee ID
@@ -776,131 +621,262 @@ public class ProjectGroupService {
 		return ResponseEntity.ok(responseDTO);
 	}
 
-//	public ResponseEntity<ResponseDTO<Map<String, Object>>> assignTaskToParticipant(Map<String, ?> request) {
-//		// Fetch project group
-//		Long projectGroupId = Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
-//		ProjectGroupDetails projectGroup = projectGroupRepository.findById(projectGroupId)
-//				.orElseThrow(() -> new NotFoundException("Project Group not found"));
-//
-//		// Get task details
-//		@SuppressWarnings("unchecked")
-//		List<Map<String, Object>> taskList = (List<Map<String, Object>>) request.get("tasks");
-//
-//		for (Map<String, Object> taskData : taskList) {
-//			Task task = new Task();
-//			task.setTaskName((String) taskData.get("taskName"));
-//			task.setDescription((String) taskData.get("description"));
-//			task.setAssignedTimestamp(LocalDateTime.now());
-//			task.setDeadlineTimestamp(LocalDateTime.parse((String) taskData.get("deadlineTimestamp")));
-//			task.setStatus("open");
-//
-//			// Get the ID of the person assigning the task (assignedBy)
-//			Long assignedById = Long.parseLong(taskData.get("assignedBy").toString());
-//
-//			// Validate that the assignee (assignedBy) is part of the project group
-//			boolean isValidParticipant = projectGroup.getParticipants().stream()
-//					.anyMatch(participant -> Long.valueOf(participant.getId()).equals(assignedById));
-//
-//			if (!isValidParticipant) {
-//				throw new ForBiddenException("Only a valid participant can assign tasks to themselves");
-//			}
-//
-//			// Set assignedBy to the valid participant
-//			task.setAssignedBy(assignedById);
-//
-//			task.setEmail((String) taskData.get("email"));
-//			task.setProjectGroup(projectGroup);
-//
-//			// Get assigned employee IDs (assignedEmployees) - these should be the same as
-//			// assignedBy for self-assignment
-//			@SuppressWarnings("unchecked")
-//			List<Integer> assignedEmployeeIds = (List<Integer>) taskData.get("assignedEmployees");
-//			List<Long> longAssignedEmployeeIds = assignedEmployeeIds.stream().map(Integer::longValue) // Convert Integer
-//																										// to Long
-//					.collect(Collectors.toList());
-//
-//			// Ensure the employee is assigning the task to themselves
-//			if (longAssignedEmployeeIds.size() != 1 || !longAssignedEmployeeIds.get(0).equals(assignedById)) {
-//				throw new ForBiddenException("The task can only be assigned to the participant themselves");
-//			}
-//
-//			List<Employee> assignedEmployees = new ArrayList<>();
-//
-//			// Validate that the assigned employees are part of the project group
-//			for (Long assignedEmployeeId : longAssignedEmployeeIds) {
-//				Employee employee = projectGroup.getParticipants().stream()
-//						.filter(e -> Long.valueOf(e.getId()).equals(assignedEmployeeId)).findFirst()
-//						.orElseThrow(() -> new NotFoundException(
-//								"Employee with ID " + assignedEmployeeId + " is not a participant"));
-//				assignedEmployees.add(employee);
-//			}
-//
-//			task.setAssignedEmployees(assignedEmployees);
-//			taskRepository.save(task);
-//
-//			// Add task to the schedule
-//			projectGroup.getScheduleTask().add(task);
-//		}
-//
-//		// Save the project group with the updated schedule
-//		projectGroupRepository.save(projectGroup);
-//
-//		// Response
-//		Map<String, Object> responseAttributes = new HashMap<>();
-//		responseAttributes.put("Message", "Tasks assigned successfully and added to schedule");
-//		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-//		responseDTO.setAttributes(responseAttributes);
-//
-//		return ResponseEntity.ok(responseDTO);
-//	}
+	// public ResponseEntity<ResponseDTO<Map<String, Object>>>
+	// assignTaskToParticipant(Map<String, ?> request) {
+	// // Fetch project group
+	// Long projectGroupId =
+	// Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
+	// ProjectGroupDetails projectGroup =
+	// projectGroupRepository.findById(projectGroupId)
+	// .orElseThrow(() -> new NotFoundException("Project Group not found"));
+	//
+	// // Get task details
+	// @SuppressWarnings("unchecked")
+	// List<Map<String, Object>> taskList = (List<Map<String, Object>>)
+	// request.get("tasks");
+	//
+	// for (Map<String, Object> taskData : taskList) {
+	// Task task = new Task();
+	// task.setTaskName((String) taskData.get("taskName"));
+	// task.setDescription((String) taskData.get("description"));
+	// task.setAssignedTimestamp(LocalDateTime.now());
+	// task.setDeadlineTimestamp(LocalDateTime.parse((String)
+	// taskData.get("deadlineTimestamp")));
+	// task.setStatus("open");
+	//
+	// // Get the ID of the person assigning the task (assignedBy)
+	// Long assignedById = Long.parseLong(taskData.get("assignedBy").toString());
+	//
+	// // Validate that the assignee (assignedBy) is part of the project group
+	// boolean isValidParticipant = projectGroup.getParticipants().stream()
+	// .anyMatch(participant ->
+	// Long.valueOf(participant.getId()).equals(assignedById));
+	//
+	// if (!isValidParticipant) {
+	// throw new ForBiddenException("Only a valid participant can assign tasks to
+	// themselves");
+	// }
+	//
+	// // Set assignedBy to the valid participant
+	// task.setAssignedBy(assignedById);
+	//
+	// task.setEmail((String) taskData.get("email"));
+	// task.setProjectGroup(projectGroup);
+	//
+	// // Get assigned employee IDs (assignedEmployees) - these should be the same
+	// as
+	// // assignedBy for self-assignment
+	// @SuppressWarnings("unchecked")
+	// List<Integer> assignedEmployeeIds = (List<Integer>)
+	// taskData.get("assignedEmployees");
+	// List<Long> longAssignedEmployeeIds =
+	// assignedEmployeeIds.stream().map(Integer::longValue) // Convert Integer
+	// // to Long
+	// .collect(Collectors.toList());
+	//
+	// // Ensure the employee is assigning the task to themselves
+	// if (longAssignedEmployeeIds.size() != 1 ||
+	// !longAssignedEmployeeIds.get(0).equals(assignedById)) {
+	// throw new ForBiddenException("The task can only be assigned to the
+	// participant themselves");
+	// }
+	//
+	// List<Employee> assignedEmployees = new ArrayList<>();
+	//
+	// // Validate that the assigned employees are part of the project group
+	// for (Long assignedEmployeeId : longAssignedEmployeeIds) {
+	// Employee employee = projectGroup.getParticipants().stream()
+	// .filter(e -> Long.valueOf(e.getId()).equals(assignedEmployeeId)).findFirst()
+	// .orElseThrow(() -> new NotFoundException(
+	// "Employee with ID " + assignedEmployeeId + " is not a participant"));
+	// assignedEmployees.add(employee);
+	// }
+	//
+	// task.setAssignedEmployees(assignedEmployees);
+	// taskRepository.save(task);
+	//
+	// // Add task to the schedule
+	// projectGroup.getScheduleTask().add(task);
+	// }
+	//
+	public Page<TaskDTO> getTasksByEmployeeAndProject(Long employeeId, Long projectId, Pageable pageable) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
 
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> markProjectStatus(Long projectId, String newStatus,Map<String,?>entity) {
-		
-		Long companyId=basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId=Long.parseLong(entity.get(Constants.COMPANY_ID).toString());
-		
-		if(companyId!=requestCompanyId) {
+		ProjectGroupDetails projectGroup = projectGroupRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Project group not found"));
+
+		if (!projectGroup.getCompanyId().equals(companyId)) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		// Check if the project exists
+
+		Employee employee = employeeRepo.findById(employeeId)
+				.orElseThrow(() -> new NotFoundException("Employee not found"));
+
+		// Permission check
+		Long userId = tokenInfo.getUserId();
+		Long userRole = tokenInfo.getRole();
+		boolean isAdminOrExecutive = (userRole != null && (userRole.equals(1L) || userRole.equals(2L)));
+		boolean isSelf = userId.equals(employeeId);
+		boolean isLeader = projectGroup.getGroupLeaders().stream().anyMatch(e -> e.getId() == userId);
+		boolean isCreator = projectGroup.getCreatedById().equals(userId);
+
+		if (!isAdminOrExecutive && !isSelf && !isLeader && !isCreator) {
+			throw new ForBiddenException("You are not authorized to view tasks for this employee");
+		}
+
+		Page<Task> tasks = taskRepository.findByAssignedEmployees_IdAndProjectGroup_ProjectId(employeeId, projectId,
+				pageable);
+		return tasks.map(this::mapToTaskDTO);
+	}
+
+	public TaskDTO createTask(CreateTaskRequest request) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+
+		ProjectGroupDetails project = projectGroupRepository.findById(request.getProjectId())
+				.orElseThrow(() -> new NotFoundException("Project not found"));
+
+		if (!project.getCompanyId().equals(companyId)) {
+			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
+		}
+
+		Task task = new Task();
+		task.setTaskName(request.getTaskName());
+		task.setDescription(request.getDescription());
+		task.setStatus("open");
+		task.setPriority(request.getPriority());
+		task.setAssignedTimestamp(LocalDateTime.now());
+		task.setDeadlineTimestamp(request.getDeadlineTimestamp());
+		task.setProjectGroup(project);
+		task.setCompanyId(companyId);
+		task.setAssignedBy(userId);
+
+		if (request.getAssignedEmployeeIds() != null && !request.getAssignedEmployeeIds().isEmpty()) {
+			List<Employee> employees = employeeRepo.findAllById(request.getAssignedEmployeeIds());
+			task.setAssignedEmployees(employees);
+		}
+
+		task = taskRepository.save(task);
+		return mapToTaskDTO(task);
+	}
+
+	public void updateProjectStatus(Long projectId, String newStatus) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+		Long userRole = tokenInfo.getRole();
+
 		ProjectGroupDetails project = projectGroupRepository.findById(projectId)
 				.orElseThrow(() -> new NotFoundException("Project with ID " + projectId + " not found."));
 
-		if(project.getCompanyId()!=requestCompanyId)
-		{
+		if (!project.getCompanyId().equals(companyId)) {
 			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 		}
-		// If the new status is 'closed', we need to check if all tasks are closed
+
+		// Permission Check: Admin, Creator, or Leader
+		boolean isCreator = project.getCreatedById().equals(userId);
+		boolean isLeader = project.getGroupLeaders().stream().anyMatch(e -> e.getId() == userId);
+		boolean isAdminOrExecutive = (userRole != null && (userRole == 1 || userRole == 2));
+
+		if (!isCreator && !isLeader && !isAdminOrExecutive) {
+			throw new ForBiddenException("You are not authorized to update project status");
+		}
+
 		if ("closed".equalsIgnoreCase(newStatus)) {
-			// Fetch all tasks related to the project
 			List<Task> tasks = taskRepository.findByProjectGroup_ProjectId(projectId);
-
-			// Check if all tasks are closed
 			boolean allTasksClosed = tasks.stream().allMatch(task -> "closed".equalsIgnoreCase(task.getStatus()));
-
 			if (!allTasksClosed) {
-				Map<String, Object> responseAttributes = new HashMap<>();
-				responseAttributes.put("message", "Complete all tasks before closing the project.");
-
-				ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-				responseDTO.setAttributes(responseAttributes);
-
-				return ResponseEntity.ok(responseDTO);
+				throw new IllegalArgumentException("Complete all tasks before closing the project.");
 			}
 		}
 
-		// Update the project status to the new status
 		project.setStatus(newStatus);
 		projectGroupRepository.save(project);
-
-		// Prepare a successful response
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("message", "Project status updated to " + newStatus);
-
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-
-		return ResponseEntity.ok(responseDTO);
 	}
 
+	public Page<ProjectDTO> getProjectsByClientId(Long clientId, Pageable pageable) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+
+		// Ensure current user (if client) can only access own projects.
+		// Or if Admin can access any client's projects within company.
+
+		Page<ProjectGroupDetails> projects = projectGroupRepository.findByClient_ClientIdAndCompanyId(clientId,
+				companyId, pageable);
+		return projects.map(this::mapToProjectDTO);
+	}
+
+	public void addParticipants(AddParticipantRequest request) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+		Long userRole = tokenInfo.getRole();
+
+		ProjectGroupDetails project = projectGroupRepository.findById(request.getProjectId())
+				.orElseThrow(() -> new NotFoundException("Project not found"));
+
+		if (!project.getCompanyId().equals(companyId)) {
+			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
+		}
+
+		// Permission: Creator, Leader, Admin
+		boolean isCreator = project.getCreatedById().equals(userId);
+		boolean isLeader = project.getGroupLeaders().stream().anyMatch(e -> e.getId() == userId);
+		boolean isAdminOrExecutive = (userRole != null && (userRole == 1 || userRole == 2));
+
+		if (!isCreator && !isLeader && !isAdminOrExecutive) {
+			throw new ForBiddenException("You are not authorized to add participants");
+		}
+
+		List<Employee> employees = employeeRepo.findAllById(request.getEmployeeIds());
+		List<ProjectParticipant> newParticipants = new ArrayList<>();
+
+		for (Employee employee : employees) {
+			boolean exists = participantRepository.existsByProjectGroupAndEmployee(project, employee);
+			if (!exists) {
+				ProjectParticipant participant = new ProjectParticipant();
+				participant.setProjectGroup(project);
+				participant.setEmployee(employee);
+				participant.setRole("Member");
+				newParticipants.add(participant);
+			}
+		}
+
+		if (!newParticipants.isEmpty()) {
+			participantRepository.saveAll(newParticipants);
+		}
+	}
+
+	public void removeParticipant(Long projectId, Long employeeId) {
+		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Long companyId = tokenInfo.getCompanyId();
+		Long userId = tokenInfo.getUserId();
+		Long userRole = tokenInfo.getRole();
+
+		ProjectGroupDetails project = projectGroupRepository.findById(projectId)
+				.orElseThrow(() -> new NotFoundException("Project not found"));
+
+		if (!project.getCompanyId().equals(companyId)) {
+			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
+		}
+
+		// Permission: Creator, Leader, Admin
+		boolean isCreator = project.getCreatedById().equals(userId);
+		boolean isLeader = project.getGroupLeaders().stream().anyMatch(e -> e.getId() == userId);
+		boolean isAdminOrExecutive = (userRole != null && (userRole == 1 || userRole == 2));
+
+		if (!isCreator && !isLeader && !isAdminOrExecutive) {
+			throw new ForBiddenException("You are not authorized to remove participants");
+		}
+
+		Employee employee = employeeRepo.findById(employeeId)
+				.orElseThrow(() -> new NotFoundException("Employee not found"));
+
+		ProjectParticipant participant = participantRepository.findByProjectGroupAndEmployee(project, employee)
+				.orElseThrow(() -> new NotFoundException("Participant not found in this project"));
+
+		participantRepository.delete(participant);
+	}
 }

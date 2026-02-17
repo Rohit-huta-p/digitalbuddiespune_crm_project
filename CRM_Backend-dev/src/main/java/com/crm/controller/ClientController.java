@@ -26,8 +26,7 @@ public class ClientController {
     @PostMapping("/create")
     public ResponseEntity<ResponseDTO<Map<String, Object>>> createClient(@RequestBody Map<String, ?> request) {
         new RequestValidator(request).hasPhoneNumber(Constants.CLIENT_PHNO).hasEmail(Constants.CLIENT_EMAIL)
-                .hasName(Constants.CLIENT_NAME).hasPassword(Constants.CLIENT_PASSWORD)
-                .hasLong(Constants.COMPANY_ID);
+                .hasName(Constants.CLIENT_NAME).hasPassword(Constants.CLIENT_PASSWORD);
 
         return clientService.createClient(request);
     }
@@ -97,6 +96,7 @@ public class ClientController {
         responseDTO.setAttributes(responseAttributes);
         return ResponseEntity.ok(responseDTO);
     }
+
     @PostMapping("/update-work")
     public ResponseEntity<ResponseDTO<Map<String, Object>>> updateWorkProgress(@RequestBody Map<String, ?> request) {
         new RequestValidator(request)
@@ -108,6 +108,5 @@ public class ClientController {
 
         return clientService.updateClientWorkProgress(request);
     }
-
 
 }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class TokenInfo {
     private Long companyId;
     private Long role;
-
+    private Long userId; // employeeId or clientId
 
 }

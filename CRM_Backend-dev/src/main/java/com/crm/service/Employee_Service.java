@@ -14,11 +14,21 @@ import com.crm.exception.InvalidCredentialsException;
 import com.crm.exception.NotFoundException;
 import com.crm.model.Employee;
 import com.crm.model.EmployeeSalary;
+import com.crm.model.ProjectGroupDetails;
 import com.crm.repos.EmployeeRepo;
 import com.crm.repos.EmployeeSalaryRepositary;
+import com.crm.repos.ProjectGroupRepository;
+import com.crm.repos.ProjectParticipantRepository;
+import com.crm.repos.DailySalaryLogRepository;
+import com.crm.repos.MonthlySalaryLogRepository;
+import com.crm.repos.WorkTimeLocationLogRepository;
+import com.crm.repos.OvertimeLogRepository;
+import com.crm.repos.NotificationRepository;
 import com.crm.utility.Constants;
 import com.crm.utility.JwtBasedCurrentUserProvider;
 import com.crm.utility.SalaryUtil;
+
+import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +46,46 @@ public class Employee_Service {
     private EmployeeSalaryRepositary employeeSalaryRepositary;
 
     @Autowired
+    private ProjectGroupRepository projectGroupRepository;
+
+    @Autowired
     private JwtBasedCurrentUserProvider basedCurrentUserProvider;
+
+    @Autowired
+    private ProjectParticipantRepository projectParticipantRepository;
+
+    @Autowired
+    private com.crm.repos.ClientDetailsRepository clientDetailsRepository;
+
+    @Autowired
+    private com.crm.repos.AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private com.crm.repos.TaskManagementRepository taskRepository;
+
+    @Autowired
+    private com.crm.repos.SocialRepository socialRepository;
+
+    @Autowired
+    private com.crm.repos.BillRepository billRepository;
+
+    @Autowired
+    private com.crm.repos.LeadRepository leadRepository;
+
+    @Autowired
+    private DailySalaryLogRepository dailySalaryLogRepository;
+
+    @Autowired
+    private MonthlySalaryLogRepository monthlySalaryLogRepository;
+
+    @Autowired
+    private WorkTimeLocationLogRepository workTimeLocationLogRepository;
+
+    @Autowired
+    private OvertimeLogRepository overtimeLogRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     public static final Logger LOG = LogManager.getLogger();
 
@@ -46,27 +95,28 @@ public class Employee_Service {
             "Backend Dev",
             "Fullstack Dev",
             "DevOps",
-            "QA"
-    );
+            "QA");
 
     // ---------------- CREATE EMPLOYEE ----------------
     public Employee createEmployee(Map<String, ?> employeeData) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
         try {
-            Long requestCompanyId = Long.parseLong(employeeData.get(Constants.COMPANY_ID).toString());
+            Long requestCompanyId = Long.parseLong(safelyGetString(employeeData, Constants.COMPANY_ID));
             if (companyId != requestCompanyId) {
                 throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
             }
 
             Employee employee = new Employee();
-            employee.setName(employeeData.get(Keys.NAME).toString());
-            employee.setEmail(employeeData.get(Keys.EMAIL).toString());
-            employee.setMobile(employeeData.get(Keys.MOBILE).toString());
-            employee.setRole(Integer.parseInt(employeeData.get(Keys.ROLE).toString()));
-            employee.setPassword(employeeData.get(Keys.PASSWORD).toString());
+            employee.setName(safelyGetString(employeeData, Keys.NAME));
+            employee.setEmail(safelyGetString(employeeData, Keys.EMAIL));
+            employee.setMobile(safelyGetString(employeeData, Keys.MOBILE));
+            employee.setRole(Integer.parseInt(safelyGetString(employeeData, Keys.ROLE)));
+            employee.setPassword(safelyGetString(employeeData, Keys.PASSWORD));
             employee.setCompanyId(requestCompanyId);
 
-            Long hrId = employeeData.containsKey(Keys.HRID) ? Long.parseLong(employeeData.get(Keys.HRID).toString()) : null;
+            Long hrId = (employeeData.containsKey(Keys.HRID) && employeeData.get(Keys.HRID) != null)
+                    ? Long.parseLong(employeeData.get(Keys.HRID).toString())
+                    : null;
             if (hrId != null) {
                 Optional<Employee> emp = repo.findById(hrId);
                 if (emp.isPresent() && emp.get().getRole() != 2) {
@@ -82,14 +132,15 @@ public class Employee_Service {
             String designationInput = employeeData.get(Keys.DESIGNATION).toString().trim();
             if (!ALLOWED_DESIGNATIONS.contains(designationInput) && !designationInput.startsWith("Custom:")) {
                 throw new InvalidCredentialsException(
-                        "Invalid designation. Allowed values: " + ALLOWED_DESIGNATIONS + " or use 'Custom:YourDesignation'");
+                        "Invalid designation. Allowed values: " + ALLOWED_DESIGNATIONS
+                                + " or use 'Custom:YourDesignation'");
             }
             employee.setDesignation(designationInput);
 
             Employee savedEmployee = repo.save(employee);
             Long employeeId = savedEmployee.getId();
 
-            double monthlySalary = Double.parseDouble(employeeData.get(Constants.MONTHLY_SALARY).toString());
+            double monthlySalary = Double.parseDouble(safelyGetString(employeeData, Constants.MONTHLY_SALARY));
             double hourlySalary = SalaryUtil.convertMonthlyToHourlySalary(monthlySalary);
 
             EmployeeSalary salary = new EmployeeSalary();
@@ -144,9 +195,11 @@ public class Employee_Service {
                         break;
                     case Keys.DESIGNATION:
                         String designationInput = value.toString().trim();
-                        if (!ALLOWED_DESIGNATIONS.contains(designationInput) && !designationInput.startsWith("Custom:")) {
+                        if (!ALLOWED_DESIGNATIONS.contains(designationInput)
+                                && !designationInput.startsWith("Custom:")) {
                             throw new InvalidCredentialsException(
-                                    "Invalid designation. Allowed values: " + ALLOWED_DESIGNATIONS + " or use 'Custom:YourDesignation'");
+                                    "Invalid designation. Allowed values: " + ALLOWED_DESIGNATIONS
+                                            + " or use 'Custom:YourDesignation'");
                         }
                         existingEmployee.setDesignation(designationInput);
                         break;
@@ -195,17 +248,27 @@ public class Employee_Service {
         return employees;
     }
 
+    @Transactional
     public void deleteEmployee(long id, Long requestCompanyId) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
         if (companyId != requestCompanyId) {
             throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
         }
 
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new NotFoundException("Employee not found with id: " + id);
+        Employee employee = repo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Employee not found with id: " + id));
+
+        // Remove employee from all project group leader lists before deleting
+        List<ProjectGroupDetails> projectGroups = projectGroupRepository.findByGroupLeadersContaining(employee);
+        for (ProjectGroupDetails group : projectGroups) {
+            group.getGroupLeaders().remove(employee);
+            projectGroupRepository.save(group);
         }
+
+        // Remove all project participation records for this employee
+        projectParticipantRepository.deleteByEmployee(employee);
+
+        repo.deleteById(id);
     }
 
     public Employee authenticateEmployee(String employeeId, String password) {
@@ -253,4 +316,68 @@ public class Employee_Service {
         return employeeList;
     }
 
+    // ---------------- RESET DATA ----------------
+    @Transactional
+    public void resetCompanyData() {
+        Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
+        LOG.info("Starting data reset for company: " + companyId);
+
+        // 1. Delete Logs & Records
+        notificationRepository.deleteAll();
+        dailySalaryLogRepository.deleteAll();
+        monthlySalaryLogRepository.deleteAll();
+        overtimeLogRepository.deleteAll();
+        workTimeLocationLogRepository.deleteAll();
+        attendanceRepository.deleteAll();
+
+        List<com.crm.model.Social> socialEntries = socialRepository.findAll().stream()
+                .filter(s -> {
+                    return (s.getClient() != null && s.getClient().getCompanyId().equals(companyId));
+                }).toList();
+        socialRepository.deleteAll(socialEntries);
+
+        // 2. Clear potential orphan Tasks (linked to company)
+        List<com.crm.model.Task> tasks = taskRepository.findByCompanyId(companyId);
+        taskRepository.deleteAll(tasks);
+
+        // 3. Delete Bills & Leads
+        List<com.crm.model.Bill> bills = billRepository.findAll().stream()
+                .filter(b -> b.getCompanyId().equals(companyId)).toList();
+        billRepository.deleteAll(bills);
+
+        List<com.crm.model.Lead> leads = leadRepository.findAll().stream()
+                .filter(l -> l.getEmployee().getCompanyId().equals(companyId)).toList();
+        leadRepository.deleteAll(leads);
+
+        // 4. Delete Clients (Cascades to Projects -> Tasks, Participants)
+        List<com.crm.model.ClientDetails> clients = clientDetailsRepository.findByCompanyId(companyId);
+        clientDetailsRepository.deleteAll(clients);
+
+        // 5. Orphan Projects (without clients or failed cascade)
+        List<ProjectGroupDetails> projects = projectGroupRepository.findByCompanyId(companyId);
+        for (ProjectGroupDetails p : projects) {
+            p.getGroupLeaders().clear();
+            projectGroupRepository.save(p);
+        }
+        projectGroupRepository.deleteAll(projects);
+
+        // 6. Employees (Except Admin)
+        List<Employee> allEmployees = repo.findByCompanyId(companyId);
+        for (Employee emp : allEmployees) {
+            if (emp.getRole() != 1) { // 1 = Admin
+                projectParticipantRepository.deleteByEmployee(emp);
+                repo.delete(emp);
+            }
+        }
+
+        LOG.info("Data reset complete for company: " + companyId);
+    }
+
+    private String safelyGetString(Map<String, ?> map, String key) {
+        Object value = map.get(key);
+        if (value == null) {
+            throw new IllegalArgumentException("Field '" + key + "' is missing or null");
+        }
+        return value.toString();
+    }
 }

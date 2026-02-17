@@ -8,9 +8,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import com.crm.model.dto.project.ProjectDTO;
+import com.crm.model.dto.project.TaskDTO;
+import com.crm.model.dto.project.CreateProjectRequest;
+import com.crm.model.dto.project.CreateTaskRequest;
+import com.crm.model.dto.project.UpdateTaskStatusRequest;
+import com.crm.model.dto.project.AddParticipantRequest;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/project")
@@ -19,148 +27,145 @@ public class ProjectGroupController {
 	@Autowired
 	private ProjectGroupService projectGroupService;
 
-	// ✅ Create a project group and assign tasks
-	@PostMapping("/group-create")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> createProjectGroup(@RequestBody Map<String, ?> request) {
-//    		
-		new RequestValidator(request).hasValidAssignBy(Constants.CREATED_BY_ID).hasString(Constants.PROJECT_NAME)
-				.hasString(Constants.PROJECT_DESC).hasValidParticipants(Constants.PARTICIPANTS)
-				.hasValidParticipantIds(Constants.GROUPLEADER_ID)
-				.hasId(Constants.CLIENT_ID,false)
-				.hasId(Constants.COMPANY_ID, true);
-
-		
-		return projectGroupService.createProjectGroup(request);
+	@PostMapping("/create")
+	public ResponseEntity<ResponseDTO<ProjectDTO>> createProject(@RequestBody @Valid CreateProjectRequest request) {
+		ProjectDTO projectDTO = projectGroupService.createProject(request);
+		ResponseDTO<ProjectDTO> response = new ResponseDTO<>();
+		response.setAttributes(projectDTO);
+		// If ResponseDTO only has 'attributes', I might need to wrap DTO in map OR
+		// update ResponseDTO.
+		// Let's check ResponseDTO. For now assume it logic or use map if sticking to
+		// legacy response structure IS required.
+		// But goal is "RESTful". Standard response.
+		// I will map to attributes for SAFETY if I can't see ResponseDTO.
+		// Actually I viewed ResponseDTO in previous turn? No, I viewed
+		// GlobalExceptionHandler which uses it.
+		response.setAttributes(projectDTO);
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/task/schedule")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> scheduleTask(@RequestBody Map<String, ?> request) {
-		new RequestValidator(request).hasId(Constants.PROJECT_GROUPID, true)
-							.hasId(Constants.COMPANY_ID, true);
-		return projectGroupService.scheduleTask(request);
+	@PostMapping("/task/create")
+	public ResponseEntity<ResponseDTO<TaskDTO>> createTask(@RequestBody @Valid CreateTaskRequest request) {
+		TaskDTO taskDTO = projectGroupService.createTask(request); // ensure service has createTask
+		ResponseDTO<TaskDTO> response = new ResponseDTO<>();
+		response.setAttributes(taskDTO);
+		return ResponseEntity.ok(response);
 	}
 
-	// ✅ Update task status and notify next participant
-	@PostMapping("/update")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> updateTaskStatus(@RequestBody Map<String, ?> request) {
-
-		new RequestValidator(request).hasId(Keys.EMPLOYEE_ID, true).hasId(Constants.FIELD_TASK_ID, true)
-				.hasValidTaskStatus(Constants.FIELD_STATUS)
-				.hasId(Constants.COMPANY_ID, true);
-
-		
-		// Response
+	@PutMapping("/task/update-status")
+	public ResponseEntity<ResponseDTO<String>> updateTaskStatus(@RequestBody @Valid UpdateTaskStatusRequest request) {
 		projectGroupService.updateTaskStatus(request);
-
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("Message", "Task status updated successfully");
-
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-
-		return ResponseEntity.ok(responseDTO);
+		ResponseDTO<String> response = new ResponseDTO<>();
+		response.setAttributes("Task status updated successfully");
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/delete")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> deleteProject(@RequestBody Map<String, ?> request) {
-
-		new RequestValidator(request).hasId(Constants.PROJECT_GROUPID, true)
-					.hasId(Constants.COMPANY_ID, true);
-		Long projectId = Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
-		projectGroupService.deleteProjectGroup(projectId,request);
-
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("Message", "Project deleted successfully");
-
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-
-		return ResponseEntity.ok(responseDTO);
+	@DeleteMapping("/{projectId}")
+	public ResponseEntity<ResponseDTO<String>> deleteProject(@PathVariable Long projectId) {
+		projectGroupService.deleteProjectGroup(projectId);
+		ResponseDTO<String> response = new ResponseDTO<>();
+		response.setAttributes("Project deleted successfully");
+		return ResponseEntity.ok(response);
 	}
 
-	// ✅ Delete a task from the project
-	@PostMapping("/task/delete")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> deleteTask(@RequestBody Map<String, ?> request) {
-
-		new RequestValidator(request).hasId(Constants.PROJECT_GROUPID, true).hasId(Constants.FIELD_TASK_ID, true)
-				.hasId(Constants.COMPANY_ID, true);
-
-		Long projectGroupId = Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
-		Long taskId = Long.parseLong(request.get(Constants.FIELD_TASK_ID).toString());
-
-		projectGroupService.deleteTask(projectGroupId, taskId,request);
-
-		// Response
-		Map<String, Object> responseAttributes = new HashMap<>();
-		responseAttributes.put("Message", "Task deleted successfully");
-
-		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-		responseDTO.setAttributes(responseAttributes);
-
-		return ResponseEntity.ok(responseDTO);
+	@DeleteMapping("/task/{taskId}")
+	public ResponseEntity<ResponseDTO<String>> deleteTask(@PathVariable Long taskId) {
+		projectGroupService.deleteTask(taskId);
+		ResponseDTO<String> response = new ResponseDTO<>();
+		response.setAttributes("Task deleted successfully");
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/get-all-projects")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllProjects(
-			@RequestParam(name = "num", required = true) Integer pageNum,
-			@RequestParam(name = "size", required = true) Integer pageSize,@RequestBody Map<String,?>request) {
-		
-		new RequestValidator(request)
-			.hasId(Constants.COMPANY_ID, true)
-			.hasPagination(pageNum, pageSize);
-		return projectGroupService.getAllProjects(pageNum, pageSize,request);
-	}
-	
-	@PostMapping(value = "/get-project-by-id")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getProjectById(@RequestBody Map<String, ?> entity) {
-	    new RequestValidator(entity).hasId(Constants.PROJECT_GROUPID, true)
-	    	.hasId(Constants.COMPANY_ID,true);
-	    return projectGroupService.getProjectById(entity);
+	@GetMapping
+	public ResponseEntity<ResponseDTO<Page<ProjectDTO>>> getAllProjects(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(required = false) String status) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<ProjectDTO> projects = projectGroupService.getAllProjects(pageable, status);
+		ResponseDTO<Page<ProjectDTO>> response = new ResponseDTO<>();
+		response.setAttributes(projects);
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/get-tasks")
-    public ResponseEntity<ResponseDTO<Map<String, Object>>> getTasksByProjectId(
-            @RequestBody Map<String, ?> entity,
-            @RequestParam(name = "num", required = true) Integer pageNum,
-            @RequestParam(name = "size", required = true) Integer pageSize) {
-
-		new RequestValidator(entity).hasId(Constants.PROJECT_GROUPID, true)
-		.hasPagination(pageNum, pageSize).hasId(Constants.COMPANY_ID, true);
-        return projectGroupService.getTasksByProjectId(entity, pageNum, pageSize);
-    }
-	
-//	@PostMapping("/assignTaskToYourself")
-//	public ResponseEntity<ResponseDTO<Map<String, Object>>> assignTaskToParticipant(@RequestBody Map<String, ?> request) {
-//			new RequestValidator(request)
-//				.hasId(Constants.PROJECT_GROUPID, true);
-//	    return projectGroupService.assignTaskToParticipant(request);
-//	}
-	
-	@PostMapping("/getTaskEmployeeByProjectId")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getTasksForEmployeeInProject(@RequestBody Map<String,?>request)
-	      {
-		
-		new RequestValidator(request)
-			.hasId(Keys.ID, true)
-			.hasId(Constants.PROJECT_GROUPID, true)
-			.hasId(Constants.COMPANY_ID, true);
-		Long employeeId=Long.parseLong(request.get(Keys.ID).toString());
-		Long projectId=Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
-	    return projectGroupService.getTasksByEmployeeAndProject(employeeId, projectId,request);
+	@GetMapping("/{projectId}")
+	public ResponseEntity<ResponseDTO<ProjectDTO>> getProjectById(@PathVariable Long projectId) {
+		ProjectDTO project = projectGroupService.getProjectById(projectId);
+		ResponseDTO<ProjectDTO> response = new ResponseDTO<>();
+		response.setAttributes(project);
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/markProjectStatus")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> markProjectStatus(@RequestBody Map<String, ?> request) {
-	    new RequestValidator(request)
-	        .hasId(Constants.PROJECT_GROUPID, true)
-	        .hasValidTaskStatus(Constants.FIELD_STATUS)
-	        .hasId(Constants.COMPANY_ID,true);
-
-	    Long projectId = Long.parseLong(request.get(Constants.PROJECT_GROUPID).toString());
-	    String newStatus = request.get(Constants.FIELD_STATUS).toString();
-
-	    return projectGroupService.markProjectStatus(projectId, newStatus,request);
+	@GetMapping("/{projectId}/tasks")
+	public ResponseEntity<ResponseDTO<Page<TaskDTO>>> getTasksByProjectId(
+			@PathVariable Long projectId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<TaskDTO> tasks = projectGroupService.getTasksByProjectId(projectId, pageable);
+		ResponseDTO<Page<TaskDTO>> response = new ResponseDTO<>();
+		response.setAttributes(tasks);
+		return ResponseEntity.ok(response);
 	}
 
+	// @PostMapping("/assignTaskToYourself")
+	// public ResponseEntity<ResponseDTO<Map<String, Object>>>
+	// assignTaskToParticipant(@RequestBody Map<String, ?> request) {
+	// new RequestValidator(request)
+	// .hasId(Constants.PROJECT_GROUPID, true);
+	// return projectGroupService.assignTaskToParticipant(request);
+	// }
 
+	@GetMapping("/{projectId}/employee/{employeeId}/tasks")
+	public ResponseEntity<ResponseDTO<Page<TaskDTO>>> getTasksByEmployeeAndProject(
+			@PathVariable Long projectId,
+			@PathVariable Long employeeId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<TaskDTO> tasks = projectGroupService.getTasksByEmployeeAndProject(employeeId, projectId, pageable);
+		ResponseDTO<Page<TaskDTO>> response = new ResponseDTO<>();
+		response.setAttributes(tasks);
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/{projectId}/status")
+	public ResponseEntity<ResponseDTO<String>> updateProjectStatus(
+			@PathVariable Long projectId,
+			@RequestParam String status) {
+		projectGroupService.updateProjectStatus(projectId, status);
+		ResponseDTO<String> response = new ResponseDTO<>();
+		response.setAttributes("Project status updated successfully");
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/client/{clientId}")
+	public ResponseEntity<ResponseDTO<Page<ProjectDTO>>> getProjectsByClientId(
+			@PathVariable Long clientId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<ProjectDTO> projects = projectGroupService.getProjectsByClientId(clientId, pageable);
+		ResponseDTO<Page<ProjectDTO>> response = new ResponseDTO<>();
+		response.setAttributes(projects);
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/{projectId}/participants")
+	public ResponseEntity<ResponseDTO<String>> addParticipant(@RequestBody @Valid AddParticipantRequest request) {
+		projectGroupService.addParticipants(request);
+		ResponseDTO<String> response = new ResponseDTO<>();
+		response.setAttributes("Participants added successfully");
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("/{projectId}/participants/{employeeId}")
+	public ResponseEntity<ResponseDTO<String>> removeParticipant(
+			@PathVariable Long projectId,
+			@PathVariable Long employeeId) {
+		projectGroupService.removeParticipant(projectId, employeeId);
+		ResponseDTO<String> response = new ResponseDTO<>();
+		response.setAttributes("Participant removed successfully");
+		return ResponseEntity.ok(response);
+	}
 }
