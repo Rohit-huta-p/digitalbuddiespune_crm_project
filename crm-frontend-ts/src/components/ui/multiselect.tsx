@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
+
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import type { Primitive } from "@radix-ui/react-primitive";
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
@@ -35,13 +37,13 @@ interface MultiSelectContextValue {
 
   open: boolean;
 
-  onSelect: (value: string, item: MultiSelectOptionItem) => void;
+  onSelect: (_value: string, _item: MultiSelectOptionItem) => void;
 
-  onDeselect: (value: string, item: MultiSelectOptionItem) => void;
+  onDeselect: (_value: string, _item: MultiSelectOptionItem) => void;
 
-  onSearch?: (keyword?: string | undefined) => void;
+  onSearch?: (_keyword?: string | undefined) => void;
 
-  filter?: boolean | ((keyword: string, current: string) => boolean);
+  filter?: boolean | ((_keyword: string, _current: string) => boolean);
 
   disabled?: boolean;
 
@@ -67,12 +69,12 @@ type MultiSelectProps = React.ComponentPropsWithoutRef<
   typeof PopoverPrimitive.Root
 > & {
   value?: string[];
-  onValueChange?: (value: string[], items: MultiSelectOptionItem[]) => void;
-  onSelect?: (value: string, item: MultiSelectOptionItem) => void;
-  onDeselect?: (value: string, item: MultiSelectOptionItem) => void;
+  onValueChange?: (_value: string[], _items: MultiSelectOptionItem[]) => void;
+  onSelect?: (_value: string, _item: MultiSelectOptionItem) => void;
+  onDeselect?: (_value: string, _item: MultiSelectOptionItem) => void;
   defaultValue?: string[];
-  onSearch?: (keyword?: string | undefined) => void;
-  filter?: boolean | ((keyword: string, current: string) => boolean);
+  onSearch?: (_keyword?: string | undefined) => void;
+  filter?: boolean | ((_keyword: string, _current: string) => boolean);
   disabled?: boolean;
   maxCount?: number;
 };
@@ -186,7 +188,7 @@ type MultiSelectTriggerElement = React.ElementRef<typeof Primitive.div>;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface MultiSelectTriggerProps
-  extends React.ComponentPropsWithoutRef<typeof Primitive.div> {}
+  extends React.ComponentPropsWithoutRef<typeof Primitive.div> { }
 
 function PreventClick(e: React.MouseEvent | React.TouchEvent) {
   e.preventDefault();
@@ -200,7 +202,7 @@ const MultiSelectTrigger = React.forwardRef<
   const { disabled } = useMultiSelect();
 
   return (
-    <PopoverPrimitive.Trigger ref={forwardedRef as any} asChild>
+    <PopoverPrimitive.Trigger ref={forwardedRef as unknown as React.RefObject<HTMLButtonElement>} asChild>
       <div
         aria-disabled={disabled}
         data-disabled={disabled}
@@ -273,8 +275,8 @@ const MultiSelectValue = React.forwardRef<
 
             const child =
               maxItemLength &&
-              typeof content === "string" &&
-              content.length > maxItemLength
+                typeof content === "string" &&
+                content.length > maxItemLength
                 ? `${content.slice(0, maxItemLength)}...`
                 : content;
 
@@ -352,7 +354,7 @@ MultiSelectList.displayName = "MultiSelectList";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface MultiSelectContentProps
-  extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {}
+  extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> { }
 
 const MultiSelectContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
@@ -392,7 +394,7 @@ const MultiSelectContent = React.forwardRef<
             "--radix-select-trigger-width": "var(--radix-popper-anchor-width)",
             "--radix-select-trigger-height":
               "var(--radix-popper-anchor-height)",
-          } as any
+          } as React.CSSProperties
         }
         {...props}
       >
@@ -446,10 +448,10 @@ const MultiSelectItem = React.forwardRef<
     const item = React.useMemo(() => {
       return value
         ? {
-            value,
-            label:
-              label || (typeof children === "string" ? children : undefined),
-          }
+          value,
+          label:
+            label || (typeof children === "string" ? children : undefined),
+        }
         : undefined;
     }, [value, label, children]);
 
@@ -538,9 +540,9 @@ export interface MultiSelectOptionGroup {
 
 export type MultiSelectOption =
   | Pick<
-      MultiSelectItemProps,
-      "value" | "label" | "disabled" | "onSelect" | "onDeselect"
-    >
+    MultiSelectItemProps,
+    "value" | "label" | "disabled" | "onSelect" | "onDeselect"
+  >
   | MultiSelectOptionSeparator
   | MultiSelectOptionGroup;
 

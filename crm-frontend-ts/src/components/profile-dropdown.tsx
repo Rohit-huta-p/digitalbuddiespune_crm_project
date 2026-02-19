@@ -33,7 +33,7 @@ export function ProfileDropdown() {
       toast.success("Database reset successfully!");
       router.refresh();
       // Optional: Redirect to dashboard or logout
-    } catch (err) {
+    } catch {
       toast.error("Failed to reset database");
     }
   };

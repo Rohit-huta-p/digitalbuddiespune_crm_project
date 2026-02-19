@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     /*
         !Error handling returns an object with schema
         error: {

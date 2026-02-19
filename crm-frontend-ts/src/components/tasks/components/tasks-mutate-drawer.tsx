@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
@@ -38,6 +41,7 @@ import { useTasks } from "@/components/tasks/context/tasks-context";
 
 interface Props {
   open: boolean;
+  // eslint-disable-next-line no-unused-vars
   onOpenChange: (open: boolean) => void;
   currentRow?: Task;
 }

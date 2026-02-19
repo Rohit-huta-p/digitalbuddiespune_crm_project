@@ -1,7 +1,9 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 "use client";
 
 import { z } from "zod";
-import { useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -48,7 +50,7 @@ type EmployeeForm = z.infer<typeof formSchema>;
 
 interface Props {
     open: boolean;
-    onOpenChange: (open: boolean) => void;
+    onOpenChange: (_open: boolean) => void;
     currentRow?: User;
 }
 
@@ -129,9 +131,13 @@ export function EmployeeMutateDrawer({
 
             onOpenChange(false);
             form.reset();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            toast.error(error?.message || "Something went wrong");
+            if (axios.isAxiosError(error) && error.response && error.response.data) {
+                toast.error(error.response.data.error?.message || "Something went wrong");
+            } else {
+                toast.error("Something went wrong");
+            }
         }
     };
 

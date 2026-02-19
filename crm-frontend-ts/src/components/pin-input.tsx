@@ -1,12 +1,13 @@
 'use client'
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 interface PinInputProps {
   children:
-    | React.ReactElement<typeof PinInputField>
-    | React.ReactElement<typeof PinInputField>[]
+  | React.ReactElement<typeof PinInputField>
+  | React.ReactElement<typeof PinInputField>[]
   /**
    * className for the input container
    */
@@ -22,7 +23,7 @@ interface PinInputProps {
   /**
    * Called when value changes
    */
-  onChange?: (value: string) => void
+  onChange?: (_value: string) => void
   /**
    * Called when all inputs have valid value
    */
@@ -393,11 +394,11 @@ const usePinInput = ({
     if (type === 'numeric') {
       const canTypeSign =
         key === 'Backspace' ||
-        key === 'Tab' ||
-        key === 'Control' ||
-        key === 'Delete' ||
-        (ctrlKey && key === 'v') ||
-        (metaKey && key === 'v')
+          key === 'Tab' ||
+          key === 'Control' ||
+          key === 'Delete' ||
+          (ctrlKey && key === 'v') ||
+          (metaKey && key === 'v')
           ? true
           : !Number.isNaN(Number(key))
 

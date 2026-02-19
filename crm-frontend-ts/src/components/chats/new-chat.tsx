@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
 import { IconCheck, IconX } from "@tabler/icons-react";

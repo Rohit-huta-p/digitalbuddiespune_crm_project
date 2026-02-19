@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
@@ -6,7 +9,6 @@ import { DataTableViewOptions } from "../components/data-table-view-options";
 import { statuses } from "../data/data";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { IconCheck } from "@tabler/icons-react";
-import axios from "axios";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;

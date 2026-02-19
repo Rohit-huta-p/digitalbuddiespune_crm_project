@@ -30,10 +30,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { NavCollapsible, NavItem, NavLink, type NavGroup } from "./types";
+import { NavCollapsible, NavItem, NavLink, type NavGroup as NavGroupType } from "./types";
 import { useAuth } from "@/context/auth-context";
 
-export function NavGroup({ title, items, role }: NavGroup) {
+export function NavGroup({ title, items, role }: NavGroupType) {
   const { state } = useSidebar();
   const href = usePathname();
   const { user } = useAuth();

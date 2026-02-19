@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { CreateBillRequest, CreateBillResponse } from "@/types/bills";
+import { CreateBillRequest } from "@/types/bills";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import axios from "axios";
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Main } from "../layout/main";
 import { IconRefresh } from "@tabler/icons-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Bills = ({ fetchBills }: any) => {
   const [billData, setBillData] = useState<CreateBillRequest>({
     customerName: "",
@@ -31,7 +32,8 @@ const Bills = ({ fetchBills }: any) => {
 
   const [date, setDate] = React.useState<Date>();
 
-  const handleDateSelect = (day: any) => {
+  const handleDateSelect = (day: Date | undefined) => {
+    if (!day) return;
     setDate(day);
     setBillData((prev) => ({
       ...prev,
@@ -85,9 +87,15 @@ const Bills = ({ fetchBills }: any) => {
 
       fetchBills();
       toast.success(response.data.message);
-    } catch (error: string | any) {
+    } catch (error: unknown) {
       console.log(error);
-      toast.error("CODE " + error.status + " " + error.message);
+      if (axios.isAxiosError(error)) {
+        const anyError = error;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        toast.error("CODE " + ((anyError as any).status || "Unknown") + " " + ((anyError as any).message || "Error"));
+      } else {
+        toast.error("An error occurred");
+      }
     }
   };
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -28,10 +29,11 @@ export async function POST(request: Request) {
       ...body,
       companyId: "1",
       createdById: userId,
+      clientId: body.clientId ? body.clientId : null
     };
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/group-create`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/create`,
       {
         method: "POST",
         headers: {

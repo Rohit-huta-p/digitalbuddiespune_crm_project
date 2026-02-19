@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -27,36 +28,44 @@ export async function POST(req: Request) {
   try {
     const body: Omit<GetProjectByIdRequest, "companyId"> = await req.json();
 
-    const payload: GetProjectByIdRequest = {
+    const _payload: GetProjectByIdRequest = {
       ...body,
       companyId: "1", // static company ID
     };
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/get-project-by-id`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${body.projectGroupId}`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
       }
     );
 
-    const responseData = await backendResponse.json();
+    let responseData;
+    try {
+      responseData = await backendResponse.json();
+    } catch (e) {
+      // If JSON parsing fails (e.g. 500 HTML error), handle gracefully
+      if (!backendResponse.ok) {
+        return NextResponse.json({ error: { message: `Backend Error: ${backendResponse.status} ${backendResponse.statusText}` } }, { status: backendResponse.status });
+      }
+      throw e;
+    }
 
-    if (responseData.errors) {
-      const error = responseData.errors[0];
+    if (!backendResponse.ok || (responseData.errors && responseData.errors.length > 0)) {
+      const error = responseData.errors?.[0];
       return NextResponse.json(
         {
           error: {
-            title: error.title || "Error",
-            message: error.message || "Something went wrong",
-            status: error.code || 500,
+            title: error?.title || "Error",
+            message: error?.message || "Something went wrong",
+            status: error?.code || backendResponse.status || 500,
           },
         },
-        { status: parseInt(error.code || "500", 10) }
+        { status: parseInt(error?.code || "500", 10) }
       );
     }
 

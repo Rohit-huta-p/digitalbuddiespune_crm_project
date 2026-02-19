@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -20,12 +21,12 @@ export function LoginForm({
   const { fetchUser } = useAuth();
   const [employeeId, setEmployeeId] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+
     setIsLoading(true);
 
     // Fetch location from browser
@@ -80,22 +81,19 @@ export function LoginForm({
         router.push("/home");
       } else {
         toast.error("Invalid credentials");
-        setError("Invalid credentials");
+
       }
     } catch (err: any) {
       if (err.code === 1) {
         toast.error(
           "Location access denied. Please allow location permissions."
         );
-        setError("Location permission denied.");
       } else if (err.response?.data?.error) {
         const { error, details } = err.response.data;
         toast.error(`${error}: ${details}`);
-        setError(`${error}: ${details}`);
       } else {
         console.error("Unexpected error:", err);
         toast.error("An unexpected error occurred");
-        setError("An unexpected error occurred");
       }
     } finally {
       setIsLoading(false);

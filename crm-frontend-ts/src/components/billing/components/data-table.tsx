@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -21,12 +21,14 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const DataTable = ({ data, loading }: any) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const columns = useMemo(
     () => [
       {
         accessorKey: "id",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         header: ({ column }: any) => (
           <Button
             variant="ghost"
@@ -236,30 +238,30 @@ const DataTable = ({ data, loading }: any) => {
         <TableBody className="">
           {loading
             ? Array.from({ length: 10 }).map((_, i) => (
-                <TableRow key={i}>
-                  {Array.from({ length: columns.length }).map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-8 w-full" />
+              <TableRow key={i}>
+                {Array.from({ length: columns.length }).map((_, j) => (
+                  <TableCell key={j}>
+                    <Skeleton className="h-8 w-full" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+            : table.getRowModel().rows.map((row) => {
+              console.log(row);
+
+              return (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
-              ))
-            : table.getRowModel().rows.map((row) => {
-                console.log(row);
-
-                return (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })}
+              );
+            })}
         </TableBody>
       </Table>
     </Card>

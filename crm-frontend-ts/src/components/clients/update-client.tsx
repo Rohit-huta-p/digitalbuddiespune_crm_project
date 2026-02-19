@@ -21,7 +21,7 @@ export default function UpdateClientPage() {
     totalTarget: "",
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -43,8 +43,18 @@ export default function UpdateClientPage() {
     setLoading(true);
 
     try {
-      const payload: any = { clientId: parseInt(clientId) };
-      
+      const payload: {
+        clientId: number;
+        name?: string;
+        phno?: string;
+        email?: string;
+        companyId?: number;
+        numberOfPosts?: number;
+        numberOfVideos?: number;
+        numberOfShoots?: number;
+        totalTarget?: number;
+      } = { clientId: parseInt(clientId) };
+
       if (form.name) payload.name = form.name;
       if (form.phno) payload.phno = form.phno;
       if (form.email) payload.email = form.email;
@@ -63,8 +73,12 @@ export default function UpdateClientPage() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to update client");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Failed to update client");
+      } else {
+        toast.error("Failed to update client");
+      }
     }
 
     setLoading(false);

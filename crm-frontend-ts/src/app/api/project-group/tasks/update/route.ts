@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -9,10 +11,11 @@ import { cookies } from "next/headers";
 */
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UpdateTaskRequest {
-    employee_id: string,
-    taskId:string,
-    status: string
+  employee_id: string,
+  taskId: string,
+  status: string
 }
 
 
@@ -30,9 +33,9 @@ export async function POST(request: Request) {
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/update`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/task/update-status`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

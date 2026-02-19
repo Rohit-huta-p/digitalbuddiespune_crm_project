@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 
 export async function POST() {

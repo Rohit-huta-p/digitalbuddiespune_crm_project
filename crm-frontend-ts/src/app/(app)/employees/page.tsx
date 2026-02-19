@@ -19,9 +19,9 @@ type Participant = {
 };
 
 type Project = {
-  projectGroupId: number;
-  projectName: string;
-  projectDesc: string;
+  id: number;
+  name: string;
+  description: string;
   status: string;
   createdAt?: string;
   participants: Participant[];
@@ -157,13 +157,13 @@ const HRPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
               <Card
-                onClick={() => router.push(`/projects/${project.projectGroupId}`)}
-                key={project.projectGroupId}
+                onClick={() => router.push(`/projects/${project.id}`)}
+                key={project.id}
                 className="p-5 bg-gradient-to-br cursor-pointer from-white to-gray-50 dark:from-zinc-900 dark:to-zinc-800 border border-primary/20 hover:shadow-lg transition-all rounded-lg"
               >
                 <CardContent>
-                  <h3 className="text-xl font-bold mb-1 text-primary">🛠️ {project.projectName}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{project.projectDesc}</p>
+                  <h3 className="text-xl font-bold mb-1 text-primary">🛠️ {project.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
                   <p className="text-sm mb-1">
                     <strong>Status:</strong> {project.status}
                   </p>

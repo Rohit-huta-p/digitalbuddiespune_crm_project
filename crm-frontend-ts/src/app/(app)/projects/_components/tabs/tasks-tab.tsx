@@ -95,7 +95,7 @@ export function TasksTab({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    projectGroupId: project.projectGroupId,
+                    projectGroupId: project.id,
                     tasks: [
                         {
                             assignedBy: user?.id,

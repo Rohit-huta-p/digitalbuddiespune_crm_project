@@ -21,12 +21,30 @@ import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
+interface Client {
+  clientId: number;
+  name: string;
+}
+
+interface SocialEntry {
+  id: number;
+  title: string;
+  status: string;
+  clientId?: number;
+  mediaType?: string;
+  referenceLink?: string;
+  mediaLink?: string;
+  colorFormat?: string;
+  notes?: string;
+  scheduledAt?: string;
+}
+
 export default function SocialUpdateForm() {
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
-  const [clients, setClients] = useState<any[]>([]);
-  const [socialEntries, setSocialEntries] = useState<any[]>([]); // Store fetched entries
+  const [clients, setClients] = useState<Client[]>([]);
+  const [socialEntries, setSocialEntries] = useState<SocialEntry[]>([]); // Store fetched entries
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const [form, setForm] = useState({
@@ -98,13 +116,14 @@ export default function SocialUpdateForm() {
 
         toast.success("Data loaded successfully");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to load data");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(error.response?.data?.error?.message || "Failed to load data");
     }
     setLoadingData(false);
   };
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -151,8 +170,9 @@ export default function SocialUpdateForm() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Update failed");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(error.response?.data?.error?.message || "Update failed");
     }
 
     setLoading(false);

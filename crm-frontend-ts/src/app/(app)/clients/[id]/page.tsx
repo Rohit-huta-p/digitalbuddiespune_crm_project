@@ -35,9 +35,9 @@ interface ClientDetail {
 }
 
 interface Project {
-    projectGroupId: number;
-    projectName: string;
-    projectDesc: string;
+    id: number;
+    name: string;
+    description: string;
     status: string;
     groupLeaderIds: number[];
 }
@@ -91,7 +91,13 @@ export default function ClientProfilePage() {
             });
             const result = await res.json();
             console.log("Projects API Result:", result);
-            const projectsData = result.attributes?.projects || result.projects || [];
+            // Handle multiple response shapes: paginated content, direct projects array, or attributes wrapper
+            const projectsData =
+                result.attributes?.content ||
+                result.attributes?.projects ||
+                result.projects ||
+                result.data?.projects ||
+                (Array.isArray(result.attributes) ? result.attributes : []);
             setProjects(projectsData);
         } catch {
             // Projects may not exist — that's ok
@@ -311,17 +317,17 @@ export default function ClientProfilePage() {
                             <div className="space-y-3">
                                 {projects.map((proj) => (
                                     <Card
-                                        key={proj.projectGroupId}
+                                        key={proj.id}
                                         className="hover:bg-accent/30 transition-colors cursor-pointer"
                                         onClick={() =>
-                                            router.push(`/projects/?projectId=${proj.projectGroupId}`)
+                                            router.push(`/projects/?projectId=${proj.id}`)
                                         }
                                     >
                                         <CardContent className="p-4 flex items-center justify-between">
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold">{proj.projectName}</p>
+                                                <p className="font-semibold">{proj.name}</p>
                                                 <p className="text-sm text-muted-foreground mt-1 truncate">
-                                                    {proj.projectDesc}
+                                                    {proj.description}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-3">

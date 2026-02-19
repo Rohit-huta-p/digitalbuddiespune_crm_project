@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -10,8 +11,8 @@ import { cookies } from "next/headers";
 
 
 interface MarkProjectStatus {
-    projectGroupId: string
-    status: string,
+  projectGroupId: string
+  status: string,
 }
 
 
@@ -26,18 +27,18 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const requestBody = { ...body, companyId: "1" };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _requestBody = { ...body, companyId: "1" };
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/markProjectStatus`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${body.projectGroupId}/status?status=${body.status}`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody)
       }
     ).then((res) => res.json());
 

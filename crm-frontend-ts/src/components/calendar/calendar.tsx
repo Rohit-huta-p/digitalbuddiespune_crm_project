@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ScheduleXCalendar, useNextCalendarApp } from "@schedule-x/react";
@@ -22,11 +23,11 @@ const calendarViews: [
   ReturnType<typeof createViewMonthGrid>,
   ReturnType<typeof createViewMonthAgenda>
 ] = [
-  createViewDay(),
-  createViewWeek(),
-  createViewMonthGrid(),
-  createViewMonthAgenda(),
-];
+    createViewDay(),
+    createViewWeek(),
+    createViewMonthGrid(),
+    createViewMonthAgenda(),
+  ];
 
 interface CalendarWithEventsService {
   eventsService: {

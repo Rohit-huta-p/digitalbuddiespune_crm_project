@@ -16,7 +16,7 @@ export default function UpdateClientWorkPage() {
     completedShoots: "",
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -34,7 +34,12 @@ export default function UpdateClientWorkPage() {
     setLoading(true);
 
     try {
-      const payload: any = { clientId: parseInt(form.clientId) };
+      const payload: {
+        clientId: number;
+        completedPosts?: number;
+        completedVideos?: number;
+        completedShoots?: number;
+      } = { clientId: parseInt(form.clientId) };
 
       if (form.completedPosts) payload.completedPosts = parseInt(form.completedPosts);
       if (form.completedVideos) payload.completedVideos = parseInt(form.completedVideos);
@@ -55,8 +60,12 @@ export default function UpdateClientWorkPage() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to update work progress");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Failed to update work progress");
+      } else {
+        toast.error("Failed to update work progress");
+      }
     }
 
     setLoading(false);

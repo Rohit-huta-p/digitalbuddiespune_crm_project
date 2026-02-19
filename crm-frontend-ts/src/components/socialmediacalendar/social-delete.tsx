@@ -34,8 +34,12 @@ export default function SocialDeletePage() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Delete failed");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Delete failed");
+      } else {
+        toast.error("Delete failed");
+      }
     }
 
     setLoading(false);

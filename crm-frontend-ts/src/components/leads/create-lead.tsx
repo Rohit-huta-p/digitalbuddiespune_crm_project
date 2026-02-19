@@ -16,7 +16,7 @@ export default function CreateLeadPage() {
     employeeId: "",
   });
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -44,8 +44,12 @@ export default function CreateLeadPage() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to create lead");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Failed to create lead");
+      } else {
+        toast.error("Failed to create lead");
+      }
     }
 
     setLoading(false);

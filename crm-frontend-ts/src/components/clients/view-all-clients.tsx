@@ -40,8 +40,12 @@ export default function ViewAllClientsPage() {
         toast.error(data.error?.message || "Something went wrong");
         setClients([]);
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to fetch clients");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Failed to fetch clients");
+      } else {
+        toast.error("Failed to fetch clients");
+      }
       setClients([]);
     }
 

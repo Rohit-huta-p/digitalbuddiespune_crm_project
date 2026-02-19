@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -26,7 +25,7 @@ export default function CheckInPage() {
         } else {
           toast.error("Please login first to use attendance features");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to load employee ID:", err);
         toast.error("Please login first to use attendance features");
       }
@@ -56,49 +55,51 @@ export default function CheckInPage() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      console.error("Check-in error:", err.response?.data);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        console.error("Check-in error:", err.response.data);
 
-      // Check for duplicate entry error (already checked in today)
-      const errorMsg = err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        err.response?.data?.error?.title ||
-        "";
+        // Check for duplicate entry error (already checked in today)
+        const errorMsg = err.response.data.error?.message ||
+          err.response.data.message ||
+          err.response.data.error?.title ||
+          "";
 
-      const status = err.response?.status;
+        const status = err.response.status;
 
-      // Handle 500 errors (usually backend serialization issues)
-      if (status === 500) {
-        // Check if it's a Hibernate/serialization error
-        if (errorMsg.toLowerCase().includes("hibernate") ||
-          errorMsg.toLowerCase().includes("bytebuddy") ||
-          errorMsg.toLowerCase().includes("type definition")) {
-          toast.error("Server configuration error", {
-            description: "The attendance was likely recorded, but there's a backend issue. Please refresh and check your attendance report.",
-            duration: 6000,
-          });
-        } else {
-          toast.error("Server error occurred", {
-            description: errorMsg || "Please try again or contact support.",
+        // Handle 500 errors (usually backend serialization issues)
+        if (status === 500) {
+          // Check if it's a Hibernate/serialization error
+          if (errorMsg.toLowerCase().includes("hibernate") ||
+            errorMsg.toLowerCase().includes("bytebuddy") ||
+            errorMsg.toLowerCase().includes("type definition")) {
+            toast.error("Server configuration error", {
+              description: "The attendance was likely recorded, but there's a backend issue. Please refresh and check your attendance report.",
+              duration: 6000,
+            });
+          } else {
+            toast.error("Server error occurred", {
+              description: errorMsg || "Please try again or contact support.",
+              duration: 5000,
+            });
+          }
+          return;
+        }
+
+        const isDuplicateError = errorMsg.toLowerCase().includes("duplicate") ||
+          errorMsg.toLowerCase().includes("already") ||
+          errorMsg.toLowerCase().includes("constraint") ||
+          status === 409;
+
+        if (isDuplicateError) {
+          toast.error("You have already checked in today!", {
+            description: "Please use Check-Out to record your departure time.",
             duration: 5000,
           });
+          setAlreadyCheckedIn(true);
+        } else {
+          toast.error(errorMsg || "Failed to record check-in");
         }
-        return;
-      }
-
-      const isDuplicateError = errorMsg.toLowerCase().includes("duplicate") ||
-        errorMsg.toLowerCase().includes("already") ||
-        errorMsg.toLowerCase().includes("constraint") ||
-        status === 409;
-
-      if (isDuplicateError) {
-        toast.error("You have already checked in today!", {
-          description: "Please use Check-Out to record your departure time.",
-          duration: 5000,
-        });
-        setAlreadyCheckedIn(true);
-      } else {
-        toast.error(errorMsg || "Failed to record check-in");
       }
     }
 

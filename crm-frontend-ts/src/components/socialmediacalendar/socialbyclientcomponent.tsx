@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -16,11 +15,25 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+interface Client {
+  clientId: number;
+  name: string;
+}
+
+interface SocialPost {
+  id: number;
+  title: string;
+  status: string;
+  mediaType: string;
+  scheduledAt: string;
+  notes?: string;
+}
+
 export default function SocialListByClientPage() {
   const [clientId, setClientId] = useState("");
-  const [clients, setClients] = useState<any[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
-  const [list, setList] = useState<any[]>([]);
+  const [list, setList] = useState<SocialPost[]>([]);
 
   // Fetch clients on mount
   useEffect(() => {
@@ -62,8 +75,9 @@ export default function SocialListByClientPage() {
         toast.error(result.error?.message || "Failed to load data");
         setList([]);
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Server error");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(error.response?.data?.error?.message || "Server error");
       setList([]);
     }
 

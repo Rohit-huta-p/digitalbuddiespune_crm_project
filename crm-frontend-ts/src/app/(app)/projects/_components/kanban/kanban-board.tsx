@@ -71,65 +71,85 @@ export function KanbanBoard({ initialTasks, onTaskUpdate, companyId }: KanbanBoa
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
-        const task = tasks.find((t) => t.taskId === active.id);
+        const task = tasks.find((t) => String(t.taskId) === String(active.id));
         if (task) setActiveTask(task);
+    };
+
+    const handleDragOver = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = String(active.id);
+        const overId = String(over.id);
+
+        // Find the containers
+        const activeTask = tasks.find((t) => String(t.taskId) === activeId);
+        const overTask = tasks.find((t) => String(t.taskId) === overId);
+
+        if (!activeTask) return;
+
+        const activeStatus = activeTask.status?.toLowerCase() || "pending";
+        const overStatus = overTask
+            ? (overTask.status?.toLowerCase() || "pending")
+            : COLUMNS.find(c => c.id === overId)?.id;
+
+        if (!overStatus || activeStatus === overStatus) return;
+
+        // Clone and update tasks immediately for smooth dragging
+        setTasks((prev) => {
+            return prev.map((t) => {
+                if (String(t.taskId) === activeId) {
+                    return { ...t, status: overStatus };
+                }
+                return t;
+            });
+        });
     };
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
-        if (!over) {
-            setActiveTask(null);
-            return;
-        }
+        setActiveTask(null);
 
-        const activeId = active.id;
-        const overId = over.id;
+        if (!over) return;
 
-        const activeTask = tasks.find((t) => t.taskId === activeId);
-        if (!activeTask) {
-            setActiveTask(null);
-            return;
-        }
+        const activeId = String(active.id);
+        const overId = String(over.id);
 
-        let newStatus = overId as string;
+        const activeTask = tasks.find((t) => String(t.taskId) === activeId);
+        if (!activeTask) return;
 
-        // Check if overId is a column
+        // Determine new status
+        let newStatus = activeTask.status; // Default to current (already updated by DragOver)
+
         const isOverColumn = COLUMNS.some((col) => col.id === overId);
-
-        if (!isOverColumn) {
-            // Dropped over another task, find its status
-            const overTask = tasks.find((t) => t.taskId === overId);
+        if (isOverColumn) {
+            newStatus = overId;
+        } else {
+            const overTask = tasks.find((t) => String(t.taskId) === overId);
             if (overTask) {
                 newStatus = overTask.status;
             }
         }
 
-        if (activeTask.status === newStatus) {
-            setActiveTask(null);
-            return;
-        }
+        // Check if we need to call API (if status changed from initial)
+        // Since we optimistic updated in DragOver, we need to compare with *original* state?
+        // Actually, just fire the API call based on the final determined status.
+        // But wait, accessing `activeTask.status` here gives the UPDATED status from DragOver (since state updated).
 
-        // Optimistic Update
-        const previousTasks = [...tasks];
-        const updatedTasks = tasks.map((t) =>
-            t.taskId === activeId ? { ...t, status: newStatus } : t
-        );
-        setTasks(updatedTasks);
-        setActiveTask(null);
-
-        // API Call
+        // Ensure API call fires with the correct new status
         try {
             await axios.patch("/api/project-group/tasks/update-status", {
-                taskId: activeId,
+                taskId: activeTask.taskId,
                 status: newStatus,
                 companyId: companyId,
             });
             toast.success("Task updated");
-            // onTaskUpdate(); // Optional: trigger full refresh
         } catch (error) {
             console.error(error);
-            setTasks(previousTasks); // Revert
             toast.error("Failed to update status");
+            // Revert would be complex here without keeping previous state ref. 
+            // For now, onRefresh() will eventually sync.
+            onTaskUpdate();
         }
     };
 
@@ -138,9 +158,10 @@ export function KanbanBoard({ initialTasks, onTaskUpdate, companyId }: KanbanBoa
             sensors={sensors}
             collisionDetection={closestCorners}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex h-full w-full gap-4 p-4 overflow-x-auto pb-10 snap-x snap-mandatory">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 h-full w-full gap-2.5 sm:gap-3 lg:gap-4 p-2.5 sm:p-3 lg:p-4">
                 {COLUMNS.map((col) => (
                     <KanbanColumn
                         key={col.id}
@@ -151,7 +172,7 @@ export function KanbanBoard({ initialTasks, onTaskUpdate, companyId }: KanbanBoa
                 ))}
             </div>
             <DragOverlay>
-                {activeTask ? <KanbanCard task={activeTask} /> : null}
+                {activeTask ? <KanbanCard task={activeTask} isOverlay /> : null}
             </DragOverlay>
         </DndContext>
     );

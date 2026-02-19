@@ -43,7 +43,7 @@ export function TeamTab({ project, onRefresh }: TeamTabProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    projectGroupId: project.projectGroupId,
+                    projectGroupId: project.id,
                     companyId: "1", // TODO: Get from context/user
                     employeeIds,
                 }),
@@ -68,7 +68,7 @@ export function TeamTab({ project, onRefresh }: TeamTabProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    projectGroupId: project.projectGroupId,
+                    projectGroupId: project.id,
                     companyId: "1",
                     employeeId,
                 }),

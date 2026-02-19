@@ -42,7 +42,7 @@ export function OverviewTab({ project, tasks, onRefresh }: OverviewTabProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    projectGroupId: project.projectGroupId,
+                    projectGroupId: project.id,
                     status: newStatus,
                 }),
             });
@@ -69,7 +69,7 @@ export function OverviewTab({ project, tasks, onRefresh }: OverviewTabProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    projectGroupId: project.projectGroupId,
+                    projectGroupId: project.id,
                 }),
             });
             const result = await res.json();
@@ -100,10 +100,10 @@ export function OverviewTab({ project, tasks, onRefresh }: OverviewTabProps) {
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">
-                            {project.projectName}
+                            {project.name}
                         </h2>
                         <p className="text-muted-foreground mt-1">
-                            {project.projectDesc || "No description provided."}
+                            {project.description || "No description provided."}
                         </p>
                     </div>
                     <Badge

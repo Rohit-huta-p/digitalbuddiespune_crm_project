@@ -14,6 +14,11 @@ export interface CreateBillResponse {
   attributes: {
     message: string;
   };
-  errors: any | null;
+  errors:
+  | {
+    title: string;
+    message: string;
+    code: string;
+  }[]
+  | null;
 }
-console.log("bills.type.ts");

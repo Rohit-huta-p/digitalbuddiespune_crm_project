@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -15,22 +16,22 @@ export async function PATCH(request: Request) {
 
     try {
         const body = await request.json();
+        console.log("Parsed Frontend Body:", body);
 
-        // Backend expects: employee_id, taskId, status, companyId
+        // Backend expects UpdateTaskStatusRequest: { taskId: Long, status: String }
         const finalBody = {
-            ...body,
-            employee_id: userId,
-            companyId: body.companyId || "1",
+            taskId: Number(body.taskId),
+            status: body.status,
         };
 
-        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/update`;
-        console.log("Calling Backend URL:", url);
-        console.log("Request Body:", JSON.stringify(finalBody));
+        console.log("Sending to backend:", JSON.stringify(finalBody));
+
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/task/update-status`;
 
         const backendResponse = await fetch(
             url,
             {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,

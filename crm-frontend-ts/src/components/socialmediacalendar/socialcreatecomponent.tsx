@@ -21,9 +21,14 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
+interface Client {
+  clientId: number;
+  name: string;
+}
+
 export default function SocialCreateForm() {
   const [loading, setLoading] = useState(false);
-  const [clients, setClients] = useState<any[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   console.log("CLIENTS fetched: ", clients)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
@@ -54,7 +59,7 @@ export default function SocialCreateForm() {
     fetchClients();
   }, []);
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -113,9 +118,10 @@ export default function SocialCreateForm() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Create Social Error:", err);
-      toast.error(err.response?.data?.error?.message || err.message || "Server error");
+      const error = err as { response?: { data?: { error?: { message?: string } } }; message?: string };
+      toast.error(error.response?.data?.error?.message || error.message || "Server error");
     }
 
     setLoading(false);

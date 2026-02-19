@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState } from "react";
@@ -21,11 +22,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Header } from "@/components/layout/header";
-import { Main } from "@/components/layout/main";
-import { ProfileDropdown } from "@/components/profile-dropdown";
-import { Search } from "@/components/search";
-import { ThemeSwitch } from "@/components/theme-switch";
 import { NewChat } from "./new-chat";
 import { type ChatUser, type Convo } from "./data/chat-types";
 // Fake Data
@@ -62,7 +58,7 @@ export default function Chats() {
     {}
   );
 
-  const users = convoData.conversations.map(({ messages, ...user }) => user);
+  const users = convoData.conversations.map(({ messages: _messages, ...user }) => user);
 
   return (
     <>
@@ -230,7 +226,7 @@ export default function Chats() {
                                 className={cn(
                                   "mt-1 block text-xs font-light text-muted-foreground",
                                   msg.sender === "You" &&
-                                    "text-right text-white"
+                                  "text-right text-white"
                                 )}
                               >
                                 {format(msg.timestamp, "h:mm a")}

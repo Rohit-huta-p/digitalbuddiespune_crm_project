@@ -13,19 +13,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-export function DatePickerDemo({ setBillData }: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DatePickerDemo({ }: any) {
   const [date, setDate] = React.useState<Date>();
-  // const formatDate = (dateString : any) => {
-  //   const date = new Date(dateString); // Convert string to Date object
-  //   date.setDate(1); // Set day to 1st
-  //   return date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-  // };
-
-  // const newDate = formatDate(date);
-
-  const handleDateSelect = (day: any) => {
-    setDate(day);
-  };
 
   return (
     <Popover>

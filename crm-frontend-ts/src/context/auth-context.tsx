@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 "use client";
 
 import {
@@ -14,7 +15,7 @@ import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
-  setUser: (user: any | null) => void;
+  setUser: (_user: User | null) => void;
   fetchUser: () => void;
   logout: () => void;
 }
@@ -62,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Optional: handle cases where the API returns a 200 status but indicates failure
         toast.error("Invalid credentials");
       }
-    } catch (err: any) {
-      if (err.response && err.response.data) {
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
         // Access the error title and details from the API response
         const { error, details } = err.response.data;
 

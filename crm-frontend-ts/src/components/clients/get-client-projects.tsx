@@ -46,8 +46,12 @@ export default function GetClientProjectsPage() {
         toast.error(data.error?.message || "Something went wrong");
         setProjects([]);
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to fetch projects");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Failed to fetch projects");
+      } else {
+        toast.error("Failed to fetch projects");
+      }
       setProjects([]);
     }
 
@@ -110,13 +114,12 @@ export default function GetClientProjectsPage() {
                       <td className="p-3 text-sm">{project.socialPlatform}</td>
                       <td className="p-3 text-sm">
                         <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            project.status === "completed"
+                          className={`px-2 py-1 rounded text-xs ${project.status === "completed"
                               ? "bg-green-100 text-green-800"
                               : project.status === "in_progress"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
                         >
                           {project.status}
                         </span>

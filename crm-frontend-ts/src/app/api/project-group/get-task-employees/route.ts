@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -10,8 +11,8 @@ import { cookies } from "next/headers";
 
 
 interface GetTaskEmployeesRequest {
-    id: string,
-    projectGroupId: string
+  id: string,
+  projectGroupId: string
 }
 
 
@@ -29,14 +30,13 @@ export async function POST(req: Request) {
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/getTaskEmployeeByProjectId`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${body.projectGroupId}/employee/${body.id}/tasks?page=0&size=10`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(body)
       }
     ).then((res) => res.json());
 

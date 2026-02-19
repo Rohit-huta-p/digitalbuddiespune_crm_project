@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 "use client";
 
 import * as React from "react";
@@ -46,8 +47,8 @@ import { User } from "@/types/user";
 
 interface DataTableProps {
   data: User[];
-  onEdit: (user: User) => void;
-  onDelete?: (user: User) => void;
+  onEdit: (_user: User) => void;
+  onDelete?: (_user: User) => void;
 }
 
 import {

@@ -56,10 +56,10 @@ export function ProjectList({
                 <div className="space-y-1">
                     {items.map((project) => (
                         <ProjectListItem
-                            key={project.projectGroupId}
+                            key={project.id}
                             project={project}
-                            isSelected={selectedProjectId === project.projectGroupId}
-                            onClick={() => onSelectProject(project.projectGroupId)}
+                            isSelected={selectedProjectId === project.id}
+                            onClick={() => onSelectProject(project.id)}
                         />
                     ))}
                 </div>
@@ -118,10 +118,10 @@ export function ProjectList({
                             <div className="space-y-1">
                                 {projects.map((project) => (
                                     <ProjectListItem
-                                        key={project.projectGroupId}
+                                        key={project.id}
                                         project={project}
-                                        isSelected={selectedProjectId === project.projectGroupId}
-                                        onClick={() => onSelectProject(project.projectGroupId)}
+                                        isSelected={selectedProjectId === project.id}
+                                        onClick={() => onSelectProject(project.id)}
                                     />
                                 ))}
                             </div>

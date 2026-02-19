@@ -6,12 +6,12 @@ export type Participant = {
 };
 
 export type Project = {
-    projectGroupId: number;
-    projectName: string;
-    projectDesc: string;
+    id: number;
+    name: string;
+    description: string;
     status: string;
     createdAt?: string;
-    createdById?: number;
+    createdBy?: number;
     clientId?: number;
     clientName?: string;
     participants: Participant[];

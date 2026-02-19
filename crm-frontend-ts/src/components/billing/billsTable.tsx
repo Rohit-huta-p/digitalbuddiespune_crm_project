@@ -1,12 +1,13 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import DataTable from "./components/data-table";
-import axios from "axios";
 import { Main } from "../layout/main";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BillsTable = ({ loading, bills, fetchBills }: any) => {
   useEffect(() => {
     fetchBills();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -27,7 +27,7 @@ export async function POST(req: Request) {
             let errorJson;
             try {
                 errorJson = JSON.parse(errorText);
-            } catch (e) {
+            } catch (_e) {
                 errorJson = { error: errorText };
             }
             return NextResponse.json(errorJson, { status: response.status });

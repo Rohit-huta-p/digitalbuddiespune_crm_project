@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -26,14 +27,14 @@ import { DataTableToolbar } from "../components/data-table-toolbar";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface DataTableProps {
+interface DataTableProps<TData, TValue> {
   loading: boolean;
-  columns: any;
-  data: any;
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
   itemsPerPage?: number;
 }
 
-export function DataTable({ loading, columns, data, itemsPerPage = 10 }: DataTableProps) {
+export function DataTable<TData, TValue>({ loading, columns, data, itemsPerPage = 10 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -84,9 +85,9 @@ export function DataTable({ loading, columns, data, itemsPerPage = 10 }: DataTab
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}

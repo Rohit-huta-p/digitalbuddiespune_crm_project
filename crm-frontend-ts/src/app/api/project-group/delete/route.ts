@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -24,15 +25,15 @@ export async function POST(request: Request) {
     const body: deleteProjectRequest = await request.json();
 
     // We're using nextjs fetch here
+    // We're using nextjs fetch here
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/delete`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${body.projectGroupId}`,
       {
-        method: "POST",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...body, companyId: "1" }),
       }
     ).then((res) => res.json());
 

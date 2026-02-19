@@ -16,18 +16,17 @@ export function LoginForm({
   const router = useRouter();
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: any) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setError("");
     try {
       toast.success("Login successful");
       router.push("/home");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
-      setError(err.response?.data?.error || "Login failed");
+      toast.error("Login failed");
     }
   };
 

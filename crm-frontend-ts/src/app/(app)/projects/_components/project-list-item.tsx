@@ -41,11 +41,11 @@ export function ProjectListItem({
                             isSelected && "text-primary"
                         )}
                     >
-                        {project.projectName}
+                        {project.name}
                     </p>
-                    {project.projectDesc && (
+                    {project.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                            {project.projectDesc}
+                            {project.description}
                         </p>
                     )}
                 </div>

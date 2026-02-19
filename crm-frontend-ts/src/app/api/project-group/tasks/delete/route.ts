@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -10,9 +11,10 @@ import { cookies } from "next/headers";
 
 
 
-interface deleteProjectTaskRequest{ 
-    projectGroupId :string,
-    taskId : string
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface deleteProjectTaskRequest {
+  projectGroupId: string,
+  taskId: string
 }
 
 
@@ -30,9 +32,9 @@ export async function POST(request: Request) {
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/task/delete`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/task/${body.taskId}`,
       {
-        method: "POST",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

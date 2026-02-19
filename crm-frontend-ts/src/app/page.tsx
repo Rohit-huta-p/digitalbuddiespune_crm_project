@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {

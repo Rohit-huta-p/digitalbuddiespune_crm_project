@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 import {
   Dialog,
@@ -43,18 +44,28 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 
+interface Project {
+  id: number;
+  name: string;
+}
+
+interface Employee {
+  id: number;
+  name: string;
+}
+
 export default function CreateTaskDialog({
   open,
   onOpenChange,
 }: {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
 }) {
   const { user } = useAuth();
 
   const [isProjectTask, setIsProjectTask] = useState(false);
-  const [projects, setProjects] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
@@ -65,7 +76,7 @@ export default function CreateTaskDialog({
     deadlineTimestamp: "",
     status: "pending",
     priority: "medium",
-    assignedToEmployeeId: [],
+    assignedToEmployeeId: [] as string[],
   });
 
   useEffect(() => {
@@ -187,12 +198,12 @@ export default function CreateTaskDialog({
                   <SelectValue placeholder="Choose a project group" />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((project: any) => (
+                  {projects.map((project) => (
                     <SelectItem
-                      key={project.projectGroupId}
-                      value={String(project.projectGroupId)}
+                      key={project.id}
+                      value={String(project.id)}
                     >
-                      {project.projectName}
+                      {project.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -303,7 +314,7 @@ export default function CreateTaskDialog({
             </Label>
             <MultiSelect
               value={formData.assignedToEmployeeId}
-              onValueChange={(val: any) =>
+              onValueChange={(val: string[]) =>
                 setFormData({ ...formData, assignedToEmployeeId: val })
               }
             >
@@ -314,8 +325,8 @@ export default function CreateTaskDialog({
                 <MultiSelectSearch placeholder="Search employees..." />
                 <MultiSelectList>
                   <MultiSelectGroup heading="Employees">
-                    {employees.map((emp: any) => (
-                      <MultiSelectItem key={emp.id} value={emp.id}>
+                    {employees.map((emp) => (
+                      <MultiSelectItem key={emp.id} value={String(emp.id)}>
                         {emp.name}
                       </MultiSelectItem>
                     ))}

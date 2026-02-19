@@ -15,11 +15,26 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+interface SocialEntry {
+  id: number;
+  title: string;
+  clientId: number;
+  mediaType: string;
+  status: string;
+  scheduledAt: string;
+  mediaLink?: string;
+  referenceLink?: string;
+  notes?: string;
+  colorFormat?: string;
+  createdBy?: string;
+  createdAt?: string;
+}
+
 export default function SocialViewPage() {
   const [id, setId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
-  const [socialEntries, setSocialEntries] = useState<any[]>([]);
+  const [data, setData] = useState<SocialEntry | null>(null);
+  const [socialEntries, setSocialEntries] = useState<SocialEntry[]>([]);
 
   // Fetch all social entries on mount
   useEffect(() => {
@@ -56,8 +71,12 @@ export default function SocialViewPage() {
         toast.error(result.error?.message || "Failed to load data");
         setData(null);
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Server Error");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Server Error");
+      } else {
+        toast.error("Server Error");
+      }
     }
 
     setLoading(false);

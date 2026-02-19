@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 import React, { useState } from "react";
 import useDialogState from "@/hooks/use-dialog-state";
@@ -8,7 +9,7 @@ type TasksDialogType = "create" | "update" | "delete" | "import";
 
 interface TasksContextType {
   open: TasksDialogType | null;
-  setOpen: (str: TasksDialogType | null) => void;
+  setOpen: (val: TasksDialogType | null) => void;
   currentRow: Task | null;
   setCurrentRow: React.Dispatch<React.SetStateAction<Task | null>>;
   refreshTasks: () => void | Promise<void>;

@@ -6,7 +6,7 @@ import { Main } from "@/components/layout/main";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/employees/data-table";
-import { TasksMutateDrawer } from "@/components/tasks/components/tasks-mutate-drawer";
+
 import { User } from "@/types/user";
 import { cn } from "@/lib/utils";
 import { Task } from "@/components/tasks/data/schema";
@@ -19,9 +19,9 @@ type Participant = {
 };
 
 type Project = {
-  projectGroupId: number;
-  projectName: string;
-  projectDesc: string;
+  id: number;
+  name: string;
+  description: string;
   status: string;
   createdAt?: string;
   participants: Participant[];
@@ -32,7 +32,7 @@ const AdminPage = () => {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
-  const [currentTask, setCurrentTask] = useState<Task | null>(null);
+
   const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [employees, setEmployees] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -42,8 +42,8 @@ const AdminPage = () => {
       const res = await fetch("/api/employees", { method: "POST" });
       const data = await res.json();
       setEmployees(data.attributes.employees);
-    } catch (err) {
-      console.error("Error fetching employees:", err);
+    } catch (_err) {
+      console.error("Error fetching employees");
     }
   };
 
@@ -54,8 +54,8 @@ const AdminPage = () => {
       });
       const data = await res.json();
       setProjects(data.projects || []);
-    } catch (err) {
-      console.error("Error fetching projects:", err);
+    } catch (_err) {
+      console.error("Error fetching projects");
     }
   };
 
@@ -156,13 +156,13 @@ const AdminPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => (
               <Card
-                onClick={() => router.push(`/projects/${project.projectGroupId}`)}
-                key={project.projectGroupId}
+                onClick={() => router.push(`/projects/${project.id}`)}
+                key={project.id}
                 className="p-5 bg-gradient-to-br cursor-pointer from-white to-gray-50 dark:from-zinc-900 dark:to-zinc-800 border border-primary/20 hover:shadow-lg transition-all rounded-lg"
               >
                 <CardContent>
-                  <h3 className="text-xl font-bold mb-1 text-primary">🛠️ {project.projectName}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{project.projectDesc}</p>
+                  <h3 className="text-xl font-bold mb-1 text-primary">🛠️ {project.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-2">{project.description}</p>
                   <p className="text-sm mb-1">
                     <strong>Status:</strong> {project.status}
                   </p>

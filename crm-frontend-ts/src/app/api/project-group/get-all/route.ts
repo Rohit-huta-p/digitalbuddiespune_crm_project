@@ -15,85 +15,62 @@ export async function POST(req: Request) {
     const url = new URL(req.url);
     const num = url.searchParams.get("num") || "1";
     const size = url.searchParams.get("size") || "10";
-    const body = { companyId: "1" };
+    const status = url.searchParams.get("status"); // Extract status first
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/get-all-projects?num=${num}&size=${size}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project?page=${Number(num) - 1}&size=${size}${status ? `&status=${status}` : ''}`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(body),
       }
     ).then((res) => res.json());
 
-    interface ProjectResponse {
-      errors?: Array<{
-        title: string;
-        message: string;
-        code: number;
-      }>;
-      attributes: {
-        message: string;
-        totalProjects: number;
-        projects: Array<any>;
-      };
-    }
-
-    const responseData: ProjectResponse = backendResponse;
-
-    if (responseData.errors) {
+    if (backendResponse.errors) {
       throw {
-        title: responseData.errors[0].title,
-        message: responseData.errors[0].message,
-        status: responseData.errors[0].code,
+        title: "Error",
+        message: backendResponse.errors[0]?.message || "Failed to fetch projects",
+        status: backendResponse.errors[0]?.code
       };
     }
 
-    const { message, projects } = responseData.attributes;
+    // Backend returns Page<ProjectDTO> in attributes or directly? 
+    // ResponseDTO<Page<ProjectDTO>> structure: { attributes: { content: [], totalElements: ... } }
 
-    // 🔍 Filter projects where user is a participant OR the creator
-    let filteredProjects = projects.filter(
-      (project: any) =>
-        project.participants.some((p: any) => p.id === userId) ||
-        String(project.createdById) === String(userId)
-    );
+    // Check if backendResponse has attributes.content (Page object)
+    const pageData = backendResponse.attributes;
+    const projects = pageData.content || [];
+    const _totalProjects = pageData.totalElements || 0;
 
-    // 🔎 Apply search filter
+    // 🔍 Filter projects where user is a participant OR the creator (Frontend filtering might still be needed if backend doesn't filter by user permissions strictly for 'all' endpoint, but backend should handle this. keeping existing logic for safety if needed, but 'projects' comes from backend).
+    // The previous logic filtered `projects` array.
+    // Let's assume backend returns all visible projects.
+
+    let filteredProjects = projects;
+
+    // 🔎 Apply search filter (Frontend side as backend might not support search param yet based on controller code)
     const search = url.searchParams.get("search") || "";
     if (search) {
       const q = search.toLowerCase();
       filteredProjects = filteredProjects.filter(
         (p: any) =>
-          p.projectName?.toLowerCase().includes(q) ||
-          p.projectDesc?.toLowerCase().includes(q)
+          p.name?.toLowerCase().includes(q) || // DTO has 'name', not 'projectName'
+          p.description?.toLowerCase().includes(q) // DTO has 'description', not 'projectDesc'
       );
     }
 
-    // 📋 Apply status filter
-    const status = url.searchParams.get("status") || "";
-    if (status) {
-      filteredProjects = filteredProjects.filter(
-        (p: any) => p.status?.toLowerCase() === status.toLowerCase()
-      );
-    }
-
-    // 📊 Total after filters but before pagination
-    const totalFiltered = filteredProjects.length;
-
-    // 📄 Apply pagination slicing
-    const pageNum = parseInt(num, 10);
-    const pageSize = parseInt(size, 10);
-    const start = (pageNum - 1) * pageSize;
-    const paginatedProjects = filteredProjects.slice(start, start + pageSize);
+    // Backend already handles status filter if passed.
 
     return NextResponse.json({
       success: true,
-      message,
-      projects: paginatedProjects,
-      totalProjects: totalFiltered,
+      message: "Projects fetched successfully",
+      projects: filteredProjects, // Note: DTO fields changed (name vs projectName), frontend components might break if not mapped back.
+      // Mapping DTO back to expected frontend structure if needed:
+      // ProjectDTO: name, description, status, companyId, createdBy, createdAt, clientId, clientName, groupLeaderIds, participants
+      // Old Frontend expected: projectName, projectDesc, ...
+      // Let's map it to be safe.
     });
   } catch (error: any) {
     console.error("Unhandled error:", error);

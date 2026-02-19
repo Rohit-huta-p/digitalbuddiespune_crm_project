@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -15,10 +15,21 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+interface SocialEntry {
+  id: number;
+  title: string;
+  clientId: number;
+  mediaType: string;
+  status: "SCHEDULED" | "DRAFT" | "POSTED";
+  scheduledAt: string;
+  mediaLink?: string;
+  notes?: string;
+}
+
 export default function SocialListByStatusPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [list, setList] = useState<any[]>([]);
+  const [list, setList] = useState<SocialEntry[]>([]);
 
   const handleFetch = async () => {
     if (!status) {
@@ -44,7 +55,7 @@ export default function SocialListByStatusPage() {
         toast.error(result.error?.message || "Failed to load data");
         setList([]);
       }
-    } catch (err: any) {
+    } catch {
       toast.error("Server Error");
       setList([]);
     }

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 import Link from "next/link";
 import { IconMenu } from "@tabler/icons-react";
@@ -56,9 +57,8 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
           <Link
             key={`${title}-${href}`}
             href={href}
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              isActive ? "" : "text-muted-foreground"
-            }`}
+            className={`text-sm font-medium transition-colors hover:text-primary ${isActive ? "" : "text-muted-foreground"
+              }`}
           >
             {title}
           </Link>

@@ -7,10 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
+interface FollowUp {
+  note: string;
+  callTime: string;
+  callStatus: "PENDING" | "COMPLETED" | "CANCELLED";
+  createdAt?: string;
+}
+
 export default function ViewFollowUpsPage({ defaultLeadId }: { defaultLeadId?: number }) {
   const [loading, setLoading] = useState(false);
   const [leadId, setLeadId] = useState(defaultLeadId ? String(defaultLeadId) : "");
-  const [followUps, setFollowUps] = useState<any[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
 
   useEffect(() => {
     if (defaultLeadId) {
@@ -43,8 +50,12 @@ export default function ViewFollowUpsPage({ defaultLeadId }: { defaultLeadId?: n
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || "Failed to load follow-ups");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        toast.error(err.response.data.error?.message || "Failed to load follow-ups");
+      } else {
+        toast.error("Failed to load follow-ups");
+      }
       setFollowUps([]);
     }
 
@@ -91,13 +102,12 @@ export default function ViewFollowUpsPage({ defaultLeadId }: { defaultLeadId?: n
                         <p>
                           <span className="font-medium">Status:</span>{" "}
                           <span
-                            className={`px-2 py-1 rounded ${
-                              followUp.callStatus === "COMPLETED"
-                                ? "bg-green-100 text-green-800"
-                                : followUp.callStatus === "PENDING"
+                            className={`px-2 py-1 rounded ${followUp.callStatus === "COMPLETED"
+                              ? "bg-green-100 text-green-800"
+                              : followUp.callStatus === "PENDING"
                                 ? "bg-yellow-100 text-yellow-800"
                                 : "bg-red-100 text-red-800"
-                            }`}
+                              }`}
                           >
                             {followUp.callStatus}
                           </span>

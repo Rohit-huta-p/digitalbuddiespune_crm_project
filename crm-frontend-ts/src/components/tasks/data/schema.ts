@@ -4,12 +4,18 @@ import { z } from "zod";
 
 export const taskSchema = z.object({
   assignedBy: z.number(),
-  deadlineTimestamp: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid date format",
-  }),
-  assignedTimestamp: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid date format",
-  }),
+  deadlineTimestamp: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Invalid date format",
+    })
+    .optional(),
+  assignedTimestamp: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Invalid date format",
+    })
+    .optional(),
   description: z.string(),
   taskName: z.string(),
   assignedToEmployeeId: z.array(z.number()),

@@ -25,9 +25,9 @@ type Participant = {
 };
 
 type Project = {
-  projectGroupId: number;
-  projectName: string;
-  projectDesc: string;
+  id: number;
+  name: string;
+  description: string;
   status: string;
   participants: Participant[];
 };
@@ -241,23 +241,23 @@ const HomePage = () => {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Card
-                key={project.projectGroupId}
+                key={project.id}
                 onClick={() =>
-                  router.push(`/projects/${project.projectGroupId}`)
+                  router.push(`/projects/${project.id}`)
                 }
                 className="cursor-pointer transition hover:shadow-md p-4 rounded-lg border border-border dark:bg-zinc-900 bg-white"
               >
                 <CardContent className="p-0">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-base font-semibold text-primary line-clamp-1">
-                      🛠️ {project.projectName}
+                      🛠️ {project.name}
                     </h3>
                     <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground capitalize">
                       {project.status}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                    {project.projectDesc}
+                    {project.description}
                   </p>
                   <p className="text-xs">
                     <strong>Team:</strong>{" "}

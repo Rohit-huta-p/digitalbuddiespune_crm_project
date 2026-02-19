@@ -27,9 +27,9 @@ interface Client {
 }
 
 interface Project {
-  projectGroupId: number;
-  projectName: string;
-  projectDesc: string;
+  id: number;
+  name: string;
+  description: string;
   status: string;
   groupLeaderIds: number[];
 }
@@ -272,16 +272,16 @@ export default function ClientsPage() {
             <div className="space-y-3 max-h-[60vh] overflow-y-auto">
               {projects.map((proj) => (
                 <div
-                  key={proj.projectGroupId}
+                  key={proj.id}
                   className="rounded-xl border border-border/60 bg-white/60 dark:bg-zinc-900/30 backdrop-blur-md p-4 shadow-sm space-y-2"
                 >
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-lg font-semibold text-foreground">
-                        {proj.projectName}
+                        {proj.name}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {proj.projectDesc}
+                        {proj.description}
                       </p>
                     </div>
                     <span
@@ -304,7 +304,7 @@ export default function ClientsPage() {
                       variant="outline"
                       className="text-sm"
                       onClick={() =>
-                        router.push(`/projects/${proj.projectGroupId}`)
+                        router.push(`/projects/${proj.id}`)
                       }
                     >
                       🔗 Open Project

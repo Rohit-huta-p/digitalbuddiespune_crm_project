@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any, no-unused-vars, @typescript-eslint/no-unused-vars */
 import React, { useState, useMemo } from "react";
 import {
   createColumnHelper,
@@ -94,8 +95,8 @@ export default function MainTable({
               table.getIsAllPageRowsSelected()
                 ? true
                 : table.getIsSomePageRowsSelected()
-                ? "indeterminate"
-                : false
+                  ? "indeterminate"
+                  : false
             }
             onCheckedChange={() => table.toggleAllPageRowsSelected()}
             aria-label="Select all rows"
@@ -169,13 +170,12 @@ export default function MainTable({
             | "closed";
           return (
             <div
-              className={`px-2 py-1 rounded-full text-sm font-medium text-center ${
-                status === "open"
+              className={`px-2 py-1 rounded-full text-sm font-medium text-center ${status === "open"
                   ? "bg-blue-900/25 text-blue-300 border border-blue-900"
                   : status === "pending"
-                  ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
-                  : "bg-green-900/25 text-green-300 border border-green-900"
-              }`}
+                    ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
+                    : "bg-green-900/25 text-green-300 border border-green-900"
+                }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </div>
@@ -190,13 +190,12 @@ export default function MainTable({
             info.getValue() ?? ("-" as "high" | "medium" | "low");
           return (
             <div
-              className={`px-2 py-1 rounded-full text-sm font-medium text-center ${
-                priority === "high"
+              className={`px-2 py-1 rounded-full text-sm font-medium text-center ${priority === "high"
                   ? "bg-red-900/25 text-red-500 font-bold border border-red-900"
                   : priority === "medium"
-                  ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
-                  : "bg-green-900/25 text-green-300 border border-green-900"
-              }`}
+                    ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
+                    : "bg-green-900/25 text-green-300 border border-green-900"
+                }`}
             >
               {priority === "-"
                 ? "-"
@@ -212,8 +211,8 @@ export default function MainTable({
           (info.getValue() as number) === 1
             ? "Admin"
             : (info.getValue() as number) === 2
-            ? "HR"
-            : "Project Lead",
+              ? "HR"
+              : "Project Lead",
         meta: { className: "table-cell w-20" },
       }),
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -17,6 +18,7 @@ interface Task {
   status: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface TaskApiResponse {
   attributes: {
     totalPages: number;
@@ -54,18 +56,17 @@ export async function POST(req: Request) {
     const size = url.searchParams.get("size") || "10";
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/get-tasks?num=${num}&size=${size}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${body.projectGroupId}/tasks?page=${Number(num) - 1}&size=${size}`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...body, companyId: "1" }),
       }
     );
 
-    const result: TaskApiResponse = await backendResponse.json();
+    const result = await backendResponse.json();
 
     if (result.errors && result.errors.length > 0) {
       const { title, message, code } = result.errors[0];
@@ -75,7 +76,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const { tasks, totalPages, currentPage, totalTasks } = result.attributes;
+    // Backend returns Page<TaskDTO> in attributes (or directly?)
+    // ResponseDTO<Page<TaskDTO>> -> attributes = { content: [], totalPages: ..., number: ... } in Spring Page.
+    // Spring Page structure: { content: [], pageable: {}, totalElements: ..., totalPages: ..., number: ... }
+
+    const pageData = result.attributes;
+    const rawTasks = pageData.content || [];
+    const totalPages = pageData.totalPages || 0;
+    const currentPage = (pageData.number || 0) + 1;
+    const totalTasks = pageData.totalElements || 0;
+
+    // Map backend TaskDTO fields to frontend ProjectTask fields
+    const tasks = rawTasks.map((t: any) => ({
+      taskId: t.id,
+      taskName: t.name,
+      description: t.description,
+      status: t.status,
+      priority: t.priority,
+      deadlineTimestamp: t.deadline,
+      assignedTimestamp: t.assignedAt,
+      assignedBy: t.assignedBy,
+      assignedEmployees: t.assignedEmployeeIds || [],
+    }));
 
     return NextResponse.json({
       success: true,

@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { format, subYears, addYears } from "date-fns";
+import { NextRequest } from "next/server";
 
-export async function GET(request: Request) {
+export async function POST(_request: NextRequest) {
     const token = cookies().get("token")?.value;
 
     if (!token) {

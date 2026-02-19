@@ -48,6 +48,7 @@ import { format } from "date-fns";
 import { IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
+import { Task } from "@/components/tasks/data/schema";
 
 type Participant = {
   id: string;
@@ -56,23 +57,12 @@ type Participant = {
   phone: string;
 };
 
-type Task = {
-  taskId: number;
-  taskName: string;
-  description: string;
-  deadlineTimestamp: string;
-  assignedTimestamp: string;
-  assignedBy: number;
-  assignedEmployees: number[];
-  priority: string | null;
-  status: string;
-};
 
 type ProjectType = {
-  projectGroupId: number;
-  projectDesc: string;
+  id: number;
+  description: string;
   createdAt: string;
-  projectName: string;
+  name: string;
   createdById: number;
   groupLeaderIds: number[];
   participants: Participant[];
@@ -173,7 +163,8 @@ const ProjectsIndividualView = ({ params }: { params: { view: string } }) => {
               ...newTask,
               deadlineTimestamp: new Date(newTask.deadlineTimestamp)
                 .toISOString()
-                .slice(0, 19),
+                .replace("T", " ")
+                .slice(0, 19), // Format: yyyy-MM-dd HH:mm:ss
               assignedEmployees: selectedEmployees.map(Number),
             },
           ],
@@ -211,9 +202,9 @@ const ProjectsIndividualView = ({ params }: { params: { view: string } }) => {
           <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold">{project.projectName}</h1>
+              <h1 className="text-3xl font-bold">{project.name}</h1>
               <p className="text-lg text-muted-foreground">
-                {project.projectDesc || "No description provided."}
+                {project.description || "No description provided."}
               </p>
 
               <div className="flex flex-wrap items-center gap-3 mt-4">

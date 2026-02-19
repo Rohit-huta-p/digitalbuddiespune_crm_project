@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 import {
   Select,
@@ -17,7 +18,7 @@ interface SelectDropdownProps<T extends string | number> {
   items: SelectItemOption<T>[];
   defaultValue?: T;
   placeholder?: string;
-  onValueChange?: (value: T) => void;
+  onValueChange?: (_value: T) => void;
 }
 
 export function SelectDropdown<T extends string | number>({

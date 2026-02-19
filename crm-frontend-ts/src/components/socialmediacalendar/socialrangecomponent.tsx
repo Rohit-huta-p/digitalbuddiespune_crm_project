@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -53,7 +54,7 @@ export default function SocialRangePage() {
         setRecords(result.data);
         toast.success(`Found ${result.data?.length || 0} records`);
       }
-    } catch (err) {
+    } catch {
       setError("Unable to fetch data");
       setRecords([]);
       toast.error("Network error");
@@ -69,7 +70,7 @@ export default function SocialRangePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only on mount
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!from || !to) {
       toast.error("Please select a date range");

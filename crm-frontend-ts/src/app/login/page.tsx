@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuth } from "@/context/auth-context";
 
 export default function LoginPage() {

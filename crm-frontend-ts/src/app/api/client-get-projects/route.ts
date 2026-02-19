@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -18,19 +19,15 @@ export async function POST(req: Request) {
             );
         }
 
-        // Backend expects POST /project/get-by-client with { clientId, companyId }
+        // Backend expects GET /project/client/{clientId}
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/get-by-client`,
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/client/${body.clientId}?page=0&size=10`,
             {
-                method: "POST",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    clientId: body.clientId,
-                    companyId: body.companyId || "1",
-                }),
             }
         );
 

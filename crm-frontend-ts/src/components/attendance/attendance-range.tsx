@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -24,11 +23,13 @@ export default function AttendanceRangePage() {
   const [employeeId, setEmployeeId] = useState("");
   const [employeeName, setEmployeeName] = useState("");
   const [isAdminOrHR, setIsAdminOrHR] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [employees, setEmployees] = useState<any[]>([]);
   const [form, setForm] = useState({
     from: "",
     to: "",
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [attendance, setAttendance] = useState<any[]>([]);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function AttendanceRangePage() {
             if (empRes.data?.attributes?.employees) {
               const fetchedEmployees = empRes.data.attributes.employees;
               setEmployees(fetchedEmployees);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const me = fetchedEmployees.find((e: any) => String(e.id) === String(authData.employeeId));
               if (me) {
                 setEmployeeName(me.name);
@@ -67,18 +69,18 @@ export default function AttendanceRangePage() {
         } else {
           toast.error("Please login first to use attendance features");
         }
-      } catch (err: any) {
-        console.error("Failed to load employee ID:", err);
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response) {
+          console.error("Failed to load employee ID:", err.response.data);
+        } else {
+          console.error("Failed to load employee ID:", err);
+        }
         toast.error("Please login first to use attendance features");
       }
     };
 
     fetchEmployeeDetails();
   }, []);
-
-  const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async () => {
     if (!employeeId) {
@@ -112,10 +114,15 @@ export default function AttendanceRangePage() {
       } else {
         toast.error(data.error?.message || "Something went wrong");
       }
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error?.message || err.response?.data?.error?.title || "Failed to load attendance";
-      toast.error(errorMsg);
-      console.error("Attendance range error:", err.response?.data);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response && err.response.data) {
+        const errorMsg = err.response.data.error?.message || err.response.data.error?.title || "Failed to load attendance";
+        toast.error(errorMsg);
+        console.error("Attendance range error:", err.response.data);
+      } else {
+        toast.error("Failed to load attendance");
+        console.error("Attendance range error:", err);
+      }
       setAttendance([]);
     }
 
@@ -158,6 +165,7 @@ export default function AttendanceRangePage() {
                     <SelectValue placeholder="Select Employee" />
                   </SelectTrigger>
                   <SelectContent>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {employees.map((emp: any) => (
                       <SelectItem key={emp.id} value={String(emp.id)}>
                         {emp.name} (ID: {emp.id})
