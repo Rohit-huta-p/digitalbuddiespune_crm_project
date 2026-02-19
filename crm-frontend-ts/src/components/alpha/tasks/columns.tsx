@@ -43,7 +43,13 @@ export const getColumns = () => [
   columnHelper.accessor("deadlineTimestamp", {
     header: "Deadline",
     cell: (info) => {
-      const date = new Date(info.getValue());
+      const value = info.getValue();
+
+      if (!value) {
+        return <div className="text-sm text-muted-foreground">-</div>;
+      }
+
+      const date = new Date(value);
       const today = new Date().setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
