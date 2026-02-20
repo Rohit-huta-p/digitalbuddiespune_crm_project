@@ -58,11 +58,6 @@ public class ClientService {
     // ✅ Create Client
     public ResponseEntity<ResponseDTO<Map<String, Object>>> createClient(Map<String, ?> request) {
         Long companyIdFromToken = basedCurrentUserProvider.getCurrentCompanyId();
-        // Long requestCompanyId =
-        // Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        // if (!companyIdFromToken.equals(requestCompanyId)) {
-        // throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        // }
 
         String name = request.get(Constants.CLIENT_NAME).toString();
         String phno = request.get(Constants.CLIENT_PHNO).toString();
@@ -105,10 +100,6 @@ public class ClientService {
     // ✅ Update Client Info and Progress
     public ResponseEntity<ResponseDTO<Map<String, Object>>> updateClient(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        if (!companyId.equals(requestCompanyId)) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
         Long clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
         ClientDetails client = clientDetailsRepository.findById(clientId)
@@ -148,13 +139,10 @@ public class ClientService {
     }
 
     // ✅ Get All Clients
-    public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllClients(Long requestCompanyId) {
+    public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllClients() {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        if (!companyId.equals(requestCompanyId)) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
-        List<Map<String, Object>> clients = clientDetailsRepository.findByCompanyId(requestCompanyId).stream()
+        List<Map<String, Object>> clients = clientDetailsRepository.findByCompanyId(companyId).stream()
                 .map(client -> {
                     Map<String, Object> clientMap = new HashMap<>();
                     clientMap.put("clientId", client.getClientId());
@@ -184,10 +172,6 @@ public class ClientService {
     // ✅ Delete Client
     public ResponseEntity<ResponseDTO<Map<String, Object>>> deleteClient(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        if (!companyId.equals(requestCompanyId)) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
         Long clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
         if (!clientDetailsRepository.existsById(clientId)) {
@@ -219,10 +203,6 @@ public class ClientService {
     // ✅ Update Work Progress API (Manual Adjustment)
     public ResponseEntity<ResponseDTO<Map<String, Object>>> updateClientWorkProgress(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        if (!companyId.equals(requestCompanyId)) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
         Long clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
         ClientDetails client = clientDetailsRepository.findById(clientId)
@@ -251,10 +231,6 @@ public class ClientService {
     // ✅ Fetch projects associated with a client
     public ResponseEntity<ResponseDTO<Map<String, Object>>> getProjectsByClientId(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        if (!companyId.equals(requestCompanyId)) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
         Long clientId = Long.parseLong(request.get(Constants.CLIENT_ID).toString());
         ClientDetails client = clientDetailsRepository.findById(clientId)

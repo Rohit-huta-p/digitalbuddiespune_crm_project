@@ -101,18 +101,13 @@ public class Employee_Service {
     public Employee createEmployee(Map<String, ?> employeeData) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
         try {
-            Long requestCompanyId = Long.parseLong(safelyGetString(employeeData, Constants.COMPANY_ID));
-            if (companyId != requestCompanyId) {
-                throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-            }
-
             Employee employee = new Employee();
             employee.setName(safelyGetString(employeeData, Keys.NAME));
             employee.setEmail(safelyGetString(employeeData, Keys.EMAIL));
             employee.setMobile(safelyGetString(employeeData, Keys.MOBILE));
             employee.setRole(Integer.parseInt(safelyGetString(employeeData, Keys.ROLE)));
             employee.setPassword(safelyGetString(employeeData, Keys.PASSWORD));
-            employee.setCompanyId(requestCompanyId);
+            employee.setCompanyId(companyId);
 
             Long hrId = (employeeData.containsKey(Keys.HRID) && employeeData.get(Keys.HRID) != null)
                     ? Long.parseLong(employeeData.get(Keys.HRID).toString())
@@ -161,10 +156,6 @@ public class Employee_Service {
     // ---------------- UPDATE EMPLOYEE ----------------
     public Employee updateEmployee(long id, Map<String, ?> employeeData) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(employeeData.get(Constants.COMPANY_ID).toString());
-        if (companyId != requestCompanyId) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
         Employee existingEmployee = repo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Employee not found"));
@@ -226,22 +217,14 @@ public class Employee_Service {
     }
 
     // ---------------- OTHER METHODS ----------------
-    public Employee getEmployeeById(long id, Long requestCompanyId) {
-        Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        if (companyId != requestCompanyId) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
+    public Employee getEmployeeById(long id) {
         return repo.findById(id).orElseThrow(() -> new NotFoundException("Employee not found with id: " + id));
     }
 
     public List<Employee> getAllEmployee(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-        if (companyId != requestCompanyId) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
-        List<Employee> employees = repo.findByCompanyId(requestCompanyId);
+        List<Employee> employees = repo.findByCompanyId(companyId);
         if (employees.isEmpty()) {
             throw new NotFoundException("No employees found in the database.");
         }
@@ -249,11 +232,8 @@ public class Employee_Service {
     }
 
     @Transactional
-    public void deleteEmployee(long id, Long requestCompanyId) {
+    public void deleteEmployee(long id) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-        if (companyId != requestCompanyId) {
-            throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-        }
 
         Employee employee = repo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Employee not found with id: " + id));

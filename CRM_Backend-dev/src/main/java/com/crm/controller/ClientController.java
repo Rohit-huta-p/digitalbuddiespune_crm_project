@@ -33,30 +33,26 @@ public class ClientController {
 
     @PostMapping("/update")
     public ResponseEntity<ResponseDTO<Map<String, Object>>> updateClient(@RequestBody Map<String, ?> request) {
-        // expects CLIENT_ID and COMPANY_ID
-        new RequestValidator(request).hasId(Constants.CLIENT_ID, true).hasId(Constants.COMPANY_ID, true);
+        // expects CLIENT_ID
+        new RequestValidator(request).hasId(Constants.CLIENT_ID, true);
         return clientService.updateClient(request);
     }
 
     @PostMapping("/getAll")
     public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllClients(@RequestBody Map<String, ?> request) {
-        new RequestValidator(request).hasId(Constants.COMPANY_ID, false);
-        Long companyId = request.get(Constants.COMPANY_ID) != null
-                ? Long.parseLong(request.get(Constants.COMPANY_ID).toString())
-                : null;
-        return clientService.getAllClients(companyId);
+        return clientService.getAllClients();
     }
 
     @PostMapping("/get-projects")
     public ResponseEntity<ResponseDTO<Map<String, Object>>> getClientProjects(@RequestBody Map<String, ?> request) {
-        new RequestValidator(request).hasId(Constants.CLIENT_ID, true).hasId(Constants.COMPANY_ID, true);
+        new RequestValidator(request).hasId(Constants.CLIENT_ID, true);
 
         return clientService.getProjectsByClientId(request);
     }
 
     @PostMapping("/delete")
     public ResponseEntity<ResponseDTO<Map<String, Object>>> deleteClient(@RequestBody Map<String, ?> request) {
-        new RequestValidator(request).hasId(Constants.CLIENT_ID, true).hasId(Constants.COMPANY_ID, false);
+        new RequestValidator(request).hasId(Constants.CLIENT_ID, true);
 
         return clientService.deleteClient(request);
     }
@@ -101,7 +97,6 @@ public class ClientController {
     public ResponseEntity<ResponseDTO<Map<String, Object>>> updateWorkProgress(@RequestBody Map<String, ?> request) {
         new RequestValidator(request)
                 .hasId(Constants.CLIENT_ID, true)
-                .hasId(Constants.COMPANY_ID, true)
                 .optional("completedPosts")
                 .optional("completedVideos")
                 .optional("completedShoots");

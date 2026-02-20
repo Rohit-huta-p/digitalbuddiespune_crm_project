@@ -30,9 +30,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/employee/login", "/employee/logout",
                                 "/client/login", "/client/logout",
-                                "/employee/mark-attendance", "/employee/mark-login",
+                                "/employee/attendance", "/employee/mark-login",
                                 "/employee/mark-logout", "/employee/check-attendance",
-                                "/employee/search")
+                                "/employee/search", "/employee/create")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

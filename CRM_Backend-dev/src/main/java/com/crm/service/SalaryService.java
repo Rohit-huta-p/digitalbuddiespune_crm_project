@@ -1,6 +1,8 @@
 package com.crm.service;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +67,8 @@ public class SalaryService {
     public double calculateAndLogDailySalary(Long employeeId, Double manualTaxPercentage) {
 
         // Get latest employee login log
-        Optional<WorkTimeLocationLog> logOpt = employeeLogRepository.findTopByEmployeeIdOrderByLoginTimeDesc(employeeId);
+        Optional<WorkTimeLocationLog> logOpt = employeeLogRepository
+                .findTopByEmployeeIdOrderByLoginTimeDesc(employeeId);
         if (logOpt.isEmpty()) {
             throw new NotFoundException("Employee log not found.");
         }
@@ -117,13 +120,39 @@ public class SalaryService {
         return totalSalary; // Net salary after tax
     }
 
-    // ---------------- Mark Monthly Salary Paid ----------------
-    public void markSalaryAsPaid(Long employeeId, String month) {
+    // ---------------- Calculate and Save Monthly Salary ----------------
+    public MonthlySalaryLog calculateAndSaveMonthlySalary(Long employeeId, YearMonth month) {
+        LocalDate startDate = month.atDay(1);
+        LocalDate endDate = month.atEndOfMonth();
 
+        List<DailySalaryLog> salaryLogs = dailySalaryLogRepository.findSalaryBetweenDates(employeeId, startDate,
+                endDate);
+        double totalSalary = salaryLogs.stream().mapToDouble(DailySalaryLog::getDailySalary).sum();
+
+        double roundedSalary = Math.round(totalSalary * 100.0) / 100.0;
+
+        String monthString = month.toString();
+        MonthlySalaryLog salaryLog = monthlySalaryLogRepository.findByEmployeeIdAndMonth(employeeId, monthString)
+                .orElse(new MonthlySalaryLog());
+
+        if (salaryLog.getId() == null) {
+            salaryLog.setEmployeeId(employeeId);
+            salaryLog.setMonth(month);
+        }
+
+        salaryLog.setMonthlySalary(roundedSalary);
+
+        return monthlySalaryLogRepository.save(salaryLog);
+    }
+
+    // ---------------- Mark Monthly Salary Paid ----------------
+    public void markSalaryAsPaid(Long employeeId, String monthString) {
         MonthlySalaryLog salaryLog = monthlySalaryLogRepository
-                .findByEmployeeIdAndMonth(employeeId, month)
-                .orElseThrow(() -> new NotFoundException(
-                        "Salary record not found for Employee ID: " + employeeId + " and Month: " + month));
+                .findByEmployeeIdAndMonth(employeeId, monthString)
+                .orElseGet(() -> {
+                    YearMonth month = YearMonth.parse(monthString);
+                    return calculateAndSaveMonthlySalary(employeeId, month);
+                });
 
         if (salaryLog.isStatus()) {
             throw new BadRequestException("Salary is already marked as paid.");
@@ -140,8 +169,10 @@ public class SalaryService {
 
         Boolean statusBoolean = null;
         if (status != null) {
-            if (status.equalsIgnoreCase("paid")) statusBoolean = true;
-            else if (status.equalsIgnoreCase("unpaid")) statusBoolean = false;
+            if (status.equalsIgnoreCase("paid"))
+                statusBoolean = true;
+            else if (status.equalsIgnoreCase("unpaid"))
+                statusBoolean = false;
         }
 
         Pageable pageable = PageRequest.of(Math.max(0, pageNum - 1), pageSize, Sort.by(Sort.Order.asc("month")));
