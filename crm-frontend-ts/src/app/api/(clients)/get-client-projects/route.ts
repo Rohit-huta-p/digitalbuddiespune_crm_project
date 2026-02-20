@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 
 interface GetProjectsRequest {
   clientId: string;
-  companyId: string;
 }
 
 export async function GET(request: Request) {
@@ -31,7 +30,6 @@ export async function GET(request: Request) {
 
     const body = {
       clientId: parseInt(clientId),
-      companyId: 1,
     };
 
     const backendResponse = await fetch(
@@ -47,7 +45,7 @@ export async function GET(request: Request) {
     );
 
     const responseData = await backendResponse.json();
-    
+
     console.log("Get client projects response:", responseData);
 
     if (!backendResponse.ok || responseData.errors) {

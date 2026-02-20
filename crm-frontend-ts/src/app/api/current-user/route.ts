@@ -27,7 +27,7 @@ export async function POST() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ id, companyId: "1" }),
+        body: JSON.stringify({ id }),
       }
     ).then((res) => res.json());
 

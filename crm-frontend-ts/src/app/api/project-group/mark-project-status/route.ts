@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _requestBody = { ...body, companyId: "1" };
+    // const _requestBody = { ...body, companyId: "1" };
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(

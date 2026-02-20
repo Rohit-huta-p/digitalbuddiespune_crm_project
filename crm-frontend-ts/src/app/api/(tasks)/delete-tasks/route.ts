@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   try {
     const body: DeleteTaskRequest = await request.json();
-    const requestBody = { ...body, companyId: "1" };
+    const requestBody = { ...body };
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(

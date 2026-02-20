@@ -27,7 +27,6 @@ export async function POST(request: Request) {
 
     const finalBody = {
       ...body,
-      companyId: "1",
       createdById: userId,
       clientId: body.clientId ? body.clientId : null
     };

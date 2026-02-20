@@ -28,10 +28,10 @@ export async function POST(req: Request) {
   try {
     const body: Omit<GetProjectByIdRequest, "companyId"> = await req.json();
 
-    const _payload: GetProjectByIdRequest = {
-      ...body,
-      companyId: "1", // static company ID
-    };
+    // const _payload: GetProjectByIdRequest = {
+    //   ...body,
+    //   companyId: "1", // static company ID
+    // };
 
     const backendResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/project/${body.projectGroupId}`,

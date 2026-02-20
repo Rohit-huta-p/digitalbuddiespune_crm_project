@@ -31,7 +31,6 @@ export async function DELETE(request: Request) {
 
     const body = {
       clientId: parseInt(clientId),
-      companyId: 1,
     };
 
     const backendResponse = await fetch(
@@ -47,7 +46,7 @@ export async function DELETE(request: Request) {
     );
 
     const responseData = await backendResponse.json();
-    
+
     console.log("Delete client response:", responseData);
 
     if (!backendResponse.ok || responseData.errors) {

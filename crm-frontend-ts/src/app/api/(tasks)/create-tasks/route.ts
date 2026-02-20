@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const requestBody = { ...body, assignedBy: id, companyId: "1" };
+    const requestBody = { ...body, assignedBy: id };
 
     console.log(
       "/*============================================================*/"

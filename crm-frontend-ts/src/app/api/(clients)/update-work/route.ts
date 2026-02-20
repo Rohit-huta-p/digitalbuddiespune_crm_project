@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 
 interface UpdateClientWorkRequest {
   clientId: number;
-  companyId: number;
   completedPosts: number;
   completedVideos: number;
   completedShoots: number;
@@ -27,7 +26,6 @@ export async function PUT(request: Request) {
     // Add companyId if not provided
     const finalBody = {
       ...body,
-      companyId: body.companyId || 1,
     };
 
     const backendResponse = await fetch(
@@ -43,7 +41,7 @@ export async function PUT(request: Request) {
     );
 
     const responseData = await backendResponse.json();
-    
+
     console.log("Update work response:", responseData);
 
     if (!backendResponse.ok || responseData.errors) {

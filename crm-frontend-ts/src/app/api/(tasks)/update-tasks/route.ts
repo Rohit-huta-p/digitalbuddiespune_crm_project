@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const requestBody = { ...body, companyId: "1" };
+    const requestBody = { ...body };
 
     if (requestBody.deadlineTimestamp) {
       requestBody.deadlineTimestamp = new Date(requestBody.deadlineTimestamp)

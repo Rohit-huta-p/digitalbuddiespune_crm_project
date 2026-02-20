@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   try {
     const body: CreateProjectRequest = await request.json();
-    body.companyId = "1";
+    // body.companyId = "1";
     /* 
         TODO: Add type here
         const body: CreateBillRequest = await request.json();

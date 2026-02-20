@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { billData } = body;
-    const requestBody = { ...billData, companyId: "1" };
+    const requestBody = { ...billData };
 
     const backendResponse: CreateBillResponse = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/bill/createbill`,

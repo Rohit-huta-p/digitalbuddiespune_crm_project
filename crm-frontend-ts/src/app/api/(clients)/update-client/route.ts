@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 
 interface UpdateClientRequest {
   clientId: number;
-  companyId: number;
   name: string;
   phno: string;
   email: string;
@@ -28,7 +27,7 @@ export async function PUT(request: Request) {
 
   try {
     const body: UpdateClientRequest = await request.json();
-    
+
     console.log("Update client request:", body);
 
     const backendResponse = await fetch(
@@ -44,7 +43,7 @@ export async function PUT(request: Request) {
     );
 
     const responseData = await backendResponse.json();
-    
+
     console.log("Backend response:", responseData);
 
     if (!backendResponse.ok || responseData.errors) {

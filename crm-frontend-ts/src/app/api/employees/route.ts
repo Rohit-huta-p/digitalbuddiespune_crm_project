@@ -19,7 +19,7 @@ export async function POST() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ companyId: "1" }),
+        body: JSON.stringify({}),
       }
     );
 
@@ -69,9 +69,9 @@ export async function PUT(req: Request) {
      * }
      */
 
-    if (!body.id || !body.companyId) {
+    if (!body.id) {
       return NextResponse.json(
-        { error: "Employee id and companyId are required" },
+        { error: "Employee id is required" },
         { status: 400 }
       );
     }
@@ -133,7 +133,6 @@ export async function DELETE(req: Request) {
         },
         body: JSON.stringify({
           id: body.id,
-          companyId: body.companyId || "1",
         }),
       }
     );

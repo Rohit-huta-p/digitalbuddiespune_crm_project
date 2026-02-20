@@ -6,7 +6,7 @@ interface CreateClientRequest {
   phno: string;
   email: string;
   password: string;
-  companyId: number;
+
   numberOfPosts?: number;
   numberOfVideos?: number;
   numberOfShoots?: number;
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   try {
     const body: CreateClientRequest = await request.json();
-    
+
     console.log("Create client request:", body);
 
     const backendResponse = await fetch(
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     );
 
     const responseData = await backendResponse.json();
-    
+
     console.log("Backend response status:", backendResponse.status);
     console.log("Backend response data:", responseData);
 

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   try {
     const body: CreateEmployeeRequest = await request.json();
 
-    console.log("CREATE EMPLOYEE", { ...body, companyId: "1" });
+    console.log("CREATE EMPLOYEE", { ...body });
 
     // We're using nextjs fetch here
     const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/employee/create`, {
@@ -33,7 +33,6 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         ...body,
-        companyId: "1",
       }),
     }).then((res) => res.json());
 
