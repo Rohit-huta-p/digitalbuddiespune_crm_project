@@ -10,7 +10,7 @@ public class JwtBasedCurrentUserProvider {
     public Long getCurrentCompanyId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof String) {
-            return 1L; // Default for testing
+            return null; // Handle unauthenticated users
         }
         TokenInfo tokenInfo = (TokenInfo) principal;
         return tokenInfo.getCompanyId();

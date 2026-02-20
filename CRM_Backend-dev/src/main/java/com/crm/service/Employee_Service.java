@@ -100,6 +100,15 @@ public class Employee_Service {
     // ---------------- CREATE EMPLOYEE ----------------
     public Employee createEmployee(Map<String, ?> employeeData) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
+
+        // Fallback for unauthenticated registrations (e.g. first admin)
+        if (companyId == null && employeeData.containsKey(Constants.COMPANY_ID)
+                && employeeData.get(Constants.COMPANY_ID) != null) {
+            companyId = Long.parseLong(employeeData.get(Constants.COMPANY_ID).toString());
+        } else if (companyId == null) {
+            throw new ForBiddenException("Company ID must be provided for unauthenticated registration.");
+        }
+
         try {
             Employee employee = new Employee();
             employee.setName(safelyGetString(employeeData, Keys.NAME));
