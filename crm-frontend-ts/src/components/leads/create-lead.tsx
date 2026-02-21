@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -15,6 +22,28 @@ export default function CreateLeadPage() {
     business: "",
     employeeId: "",
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoadingEmployees(true);
+      try {
+        const res = await axios.post("/api/employees");
+        if (res.data?.attributes?.employees) {
+          setEmployees(res.data.attributes.employees);
+        }
+      } catch (err) {
+        console.error("Failed to load employees:", err);
+        toast.error("Failed to load employees. Defaulting to manual input.");
+      } finally {
+        setLoadingEmployees(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -87,13 +116,33 @@ export default function CreateLeadPage() {
             placeholder="Business Type (e.g., Catering)"
           />
 
-          <Input
-            name="employeeId"
-            value={form.employeeId}
-            onChange={handleChange}
-            placeholder="Employee ID"
-            type="number"
-          />
+          {employees.length > 0 ? (
+            <Select
+              value={form.employeeId}
+              onValueChange={(val) => setForm({ ...form, employeeId: val })}
+              disabled={loadingEmployees}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={loadingEmployees ? "Loading employees..." : "Assign to Employee"} />
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map((emp) => (
+                  <SelectItem key={emp.id} value={String(emp.id)}>
+                    {emp.name} (ID: {emp.id})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              name="employeeId"
+              value={form.employeeId}
+              onChange={handleChange}
+              placeholder={loadingEmployees ? "Loading employees..." : "Employee ID"}
+              type="number"
+              disabled={loadingEmployees}
+            />
+          )}
 
           <Button className="w-full" disabled={loading} onClick={handleSubmit}>
             {loading ? "Creating..." : "Create Lead"}

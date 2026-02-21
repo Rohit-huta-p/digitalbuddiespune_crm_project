@@ -6,124 +6,91 @@ import AddFollowUpPage from "@/components/leads/add-followup";
 import ViewFollowUpsPage from "@/components/leads/view-followups";
 import UpdateLeadStatusPage from "@/components/leads/update-status";
 import LeadsList from "@/components/leads/list";
+import { Main } from "@/components/layout/main";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, ArrowLeft } from "lucide-react";
 
 export default function LeadsManagementPage() {
   const [activePage, setActivePage] = useState<string>("list");
-  const [openMenu, setOpenMenu] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
 
+  // Helper to render back button when inside a sub-view
+  const renderBackButton = () => {
+    if (activePage === "list") return null;
+    return (
+      <Button
+        variant="ghost"
+        onClick={() => {
+          setActivePage("list");
+          setSelectedLeadId(null);
+        }}
+        className="mb-4 -ml-2"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Leads
+      </Button>
+    );
+  };
+
   return (
-    <div className="relative min-h-screen p-4">
-      {/* Main Content Area */}
-      {activePage === "create" && <CreateLeadPage />}
-      {activePage === "followup" && (
-        <AddFollowUpPage defaultLeadId={selectedLeadId ?? undefined} />
-      )}
-      {activePage === "view-followups" && (
-        <ViewFollowUpsPage defaultLeadId={selectedLeadId ?? undefined} />
-      )}
-      {activePage === "status" && (
-        <UpdateLeadStatusPage defaultLeadId={selectedLeadId ?? undefined} />
-      )}
+    <Main>
+      <div className="px-4 py-10 space-y-4">
 
-      {activePage === "list" && (
-        <LeadsList
-          onViewFollowUps={(id) => {
-            setSelectedLeadId(id);
-            setActivePage("view-followups");
-          }}
-          onAddFollowUp={(id) => {
-            setSelectedLeadId(id);
-            setActivePage("followup");
-          }}
-          onUpdateStatus={(id) => {
-            setSelectedLeadId(id);
-            setActivePage("status");
-          }}
-        />
-      )}
-
-      {activePage === "" && (
-        <div className="flex items-center justify-center h-[80vh]">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">
-              Lead Management
-            </h1>
-            <p className="text-gray-600">
-              Select an option from the menu to get started
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Floating Action Button */}
-      <div className="fixed top-24 right-6 flex flex-col items-end gap-3 z-50">
-        {openMenu && (
-          <div className="flex flex-col gap-3 animate-fadeIn items-end">
-            <button
-              onClick={() => {
-                setActivePage("create");
-                setOpenMenu(false);
-              }}
-              className="bg-white dark:text-black dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-            >
-              Create New Lead
-            </button>
-
-            <button
-              onClick={() => {
-                setActivePage("followup");
-                setOpenMenu(false);
-              }}
-              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-            >
-              Add Follow-up
-            </button>
-
-            <button
-              onClick={() => {
-                setActivePage("view-followups");
-                setOpenMenu(false);
-              }}
-              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-            >
-              View Follow-ups
-            </button>
-
-            <button
-              onClick={() => {
-                setActivePage("status");
-                setOpenMenu(false);
-              }}
-              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-            >
-              Update Lead Status
-            </button>
-            <button
-              onClick={() => {
-                setActivePage("list");
-                setOpenMenu(false);
-              }}
-              className="bg-white dark:text-black shadow-lg px-4 py-2 rounded-xl text-sm hover:bg-gray-100"
-            >
-              Show All Leads
-            </button>
+        {/* Sub-view Header (If not list) */}
+        {activePage !== "list" && (
+          <div className="w-full max-w-5xl mx-auto">
+            {renderBackButton()}
           </div>
         )}
 
-        <button
-          onClick={() => setOpenMenu(!openMenu)}
-          className="h-14 w-14 rounded-full dark:bg-gray-800 bg-black dark:text-white flex items-center justify-center shadow-xl hover:bg-gray-800 transition"
-        >
-          <span
-            className={`text-3xl transform transition ${
-              openMenu ? "rotate-45" : "rotate-0"
-            }`}
-          >
-            +
-          </span>
-        </button>
+        {/* Main Header (Only for List View) */}
+        {activePage === "list" && (
+          <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight">🎯 Lead Management</h1>
+            <Button
+              onClick={() => setActivePage("create")}
+              className="font-semibold"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Create New Lead
+            </Button>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <div className="w-full max-w-5xl mx-auto">
+          {activePage === "create" && <CreateLeadPage />}
+
+          {activePage === "followup" && (
+            <AddFollowUpPage defaultLeadId={selectedLeadId ?? undefined} />
+          )}
+
+          {activePage === "view-followups" && (
+            <ViewFollowUpsPage defaultLeadId={selectedLeadId ?? undefined} />
+          )}
+
+          {activePage === "status" && (
+            <UpdateLeadStatusPage defaultLeadId={selectedLeadId ?? undefined} />
+          )}
+
+          {activePage === "list" && (
+            <LeadsList
+              onViewFollowUps={(id) => {
+                setSelectedLeadId(id);
+                setActivePage("view-followups");
+              }}
+              onAddFollowUp={(id) => {
+                setSelectedLeadId(id);
+                setActivePage("followup");
+              }}
+              onUpdateStatus={(id) => {
+                setSelectedLeadId(id);
+                setActivePage("status");
+              }}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </Main>
   );
 }

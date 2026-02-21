@@ -3,18 +3,14 @@
 import { useEffect, useState } from "react";
 import { Main } from "@/components/layout/main";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Banknote, CalendarCheck, Percent, ReceiptIndianRupee } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SalaryRecord {
   id: number;
@@ -29,12 +25,18 @@ interface SalaryRecord {
   paidDate?: string;
 }
 
+type SortField = "employeeName" | "month" | "totalSalary" | "netSalary";
+
 const SalariesPage = () => {
   const [salaries, setSalaries] = useState<SalaryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageNum, setPageNum] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<SortField>("month");
+  const [isCompact, setIsCompact] = useState(false);
 
   const fetchSalaries = async () => {
     setLoading(true);
@@ -64,98 +66,150 @@ const SalariesPage = () => {
     fetchSalaries();
   }, [pageNum, pageSize]);
 
+  const filteredSalaries = salaries
+    .filter((salary) =>
+      `${salary.employeeName || `ID: ${salary.employeeId}`} ${salary.month}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortField === "employeeName" || sortField === "month") {
+        const valA = String(a[sortField] || "");
+        const valB = String(b[sortField] || "");
+        return valA.localeCompare(valB, "en", { sensitivity: "base" });
+      } else {
+        return (b[sortField] || 0) - (a[sortField] || 0);
+      }
+    });
+
   return (
     <Main>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Salary History</h1>
-        <div className="flex gap-2">
-          <Button onClick={() => window.location.href = '/salaries/calculate'}>
-            Calculate Salary
-          </Button>
-          <Button variant="outline" onClick={() => window.location.href = '/salaries/mark-paid'}>
-            Mark as Paid
-          </Button>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Salary Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee Name</TableHead>
-                  <TableHead>Month</TableHead>
-                  <TableHead>Total Salary</TableHead>
-                  <TableHead>Tax (%)</TableHead>
-                  <TableHead>Net Salary</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : salaries.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      No records found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  salaries.map((salary) => (
-                    <TableRow key={salary.id}>
-                      <TableCell className="font-medium">{salary.employeeName || `ID: ${salary.employeeId}`}</TableCell>
-                      <TableCell>{salary.month}</TableCell>
-                      <TableCell>₹{salary.totalSalary?.toFixed(2)}</TableCell>
-                      <TableCell>{salary.taxPercentage}%</TableCell>
-                      <TableCell className="font-bold text-green-600">
-                        ₹{(salary.totalSalary - (salary.taxAmount || 0)).toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${salary.status === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                          {salary.status || 'Calculated'}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageNum(Math.max(0, pageNum - 1))}
-              disabled={pageNum === 0 || loading}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              Page {pageNum + 1}
+      <div className="px-4 py-10 space-y-8">
+        <Card className="w-full max-w-4xl mx-auto">
+          <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <CardTitle className="text-2xl font-bold">💳 Salary History</CardTitle>
+            <div className="flex gap-2">
+              <Button onClick={() => window.location.href = '/salaries/calculate'}>
+                ➕ Calculate Salary
+              </Button>
+              <Button variant="outline" onClick={() => window.location.href = '/salaries/mark-paid'}>
+                ✔️ Mark as Paid
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageNum(pageNum + 1)}
-              disabled={salaries.length < pageSize || loading} // Simple check, ideally use totalPages
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <Input
+                placeholder="🔍 Search salaries..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-1/2"
+              />
+              <div className="flex items-center gap-4">
+                <Label htmlFor="sort">Sort By</Label>
+                <select
+                  id="sort"
+                  className="border rounded-md px-3 py-2 text-sm bg-background text-foreground"
+                  value={sortField}
+                  onChange={(e) => setSortField(e.target.value as SortField)}
+                >
+                  <option value="month">Month</option>
+                  <option value="employeeName">Employee Name</option>
+                  <option value="totalSalary">Total Salary</option>
+                  <option value="netSalary">Net Salary</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="compact-toggle"
+                  checked={isCompact}
+                  onCheckedChange={setIsCompact}
+                />
+                <Label htmlFor="compact-toggle">Compact Mode</Label>
+              </div>
+            </div>
+
+            <div className="space-y-2 divide-y border rounded-md overflow-hidden">
+              {loading && salaries.length === 0 && (
+                <p className="text-muted-foreground text-sm px-4 py-6 text-center">
+                  Loading salaries...
+                </p>
+              )}
+              {!loading && filteredSalaries.length === 0 && (
+                <p className="text-muted-foreground text-sm px-4 py-6 text-center">
+                  No records found.
+                </p>
+              )}
+              {filteredSalaries.map((salary) => (
+                <div
+                  key={salary.id}
+                  className={cn(
+                    "flex flex-col md:flex-row justify-between items-start md:items-center p-4 transition-all gap-4",
+                    isCompact ? "text-sm" : "text-base"
+                  )}
+                >
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">{salary.employeeName || `ID: ${salary.employeeId}`}</p>
+                      <span className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-semibold",
+                        salary.status === 'PAID' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                      )}>
+                        {salary.status || 'Calculated'}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground font-medium flex items-center gap-1">
+                      <CalendarCheck className="w-4 h-4" /> {salary.month}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 text-sm md:text-base">
+                    <div className="flex flex-col items-end md:items-start">
+                      <p className="text-muted-foreground flex items-center gap-1">
+                        <Banknote className="w-4 h-4" /> Total: <span className="font-medium text-foreground">₹{salary.totalSalary?.toFixed(2)}</span>
+                      </p>
+                      <p className="text-muted-foreground flex items-center gap-1">
+                        <Percent className="w-4 h-4" /> Tax: <span className="font-medium text-foreground">{salary.taxPercentage}% (₹{(salary.taxAmount || 0).toFixed(2)})</span>
+                      </p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <p className="text-sm text-muted-foreground">Net Salary</p>
+                      <p className="text-lg font-bold text-green-600 dark:text-green-500 flex items-center gap-1">
+                        <ReceiptIndianRupee className="w-5 h-5" />
+                        ₹{(salary.totalSalary - (salary.taxAmount || 0)).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 py-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPageNum(Math.max(0, pageNum - 1))}
+                disabled={pageNum === 0 || loading}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <div className="text-sm text-muted-foreground font-medium">
+                Page {pageNum + 1}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPageNum(pageNum + 1)}
+                disabled={salaries.length < pageSize || loading}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </Main>
   );
 };

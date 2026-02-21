@@ -101,11 +101,11 @@ export const sidebarData: SidebarData = {
           // badge: "Not Marked",
           icon: IconDeviceImacPlus,
         },
-        {
-          title: "Attendance Management",
-          url: "/attendance-new",
-          icon: IconClipboardCheck,
-        },
+        // {
+        //   title: "Attendance Management",
+        //   url: "/attendance-new",
+        //   icon: IconClipboardCheck,
+        // },
         {
           title: "Lead Management",
           url: "/leads",
