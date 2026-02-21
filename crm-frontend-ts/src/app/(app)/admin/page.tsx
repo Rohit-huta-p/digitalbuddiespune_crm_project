@@ -11,6 +11,7 @@ import { User } from "@/types/user";
 import { cn } from "@/lib/utils";
 import { Task } from "@/components/tasks/data/schema";
 import { EmployeeMutateDrawer } from "@/components/employees/components/employee-mutate-drawer";
+import { toast } from "sonner";
 
 type Participant = {
   id: string;
@@ -63,7 +64,36 @@ const AdminPage = () => {
     fetchEmployees();
     fetchProjects();
   }, []);
+  const handleDeleteEmployee = async (user: User) => {
+    console.log("handleDeleteEmployee called for:", user);
+    try {
+      const res = await fetch("/api/employees", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, companyId: 1 }),
+      });
+      console.log("Delete response status:", res.status);
+      const result = await res.json();
+      console.log("Delete result:", result);
 
+      if (!res.ok) {
+        // Parse the nested backend error for a cleaner message
+        let message = "Failed to delete employee";
+        const raw = result.error || "";
+        if (raw.includes("foreign key constraint") || raw.includes("DataIntegrityViolation")) {
+          message = `Cannot delete ${user.name} — they are assigned to active projects. Remove them from all projects first.`;
+        } else if (typeof raw === "string" && raw.length < 200) {
+          message = raw;
+        }
+        throw new Error(message);
+      }
+      toast.success(`${user.name} deleted successfully`);
+      fetchEmployees();
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      toast.error(err.message || "Failed to delete employee");
+    }
+  };
   return (
     <Main>
       {/* Welcome */}
@@ -87,11 +117,11 @@ const AdminPage = () => {
               route: "/employees/new",
               className: "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white",
             },
-            {
-              title: "Modify Roles",
-              route: "/employees/roles",
-              className: "bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 text-white",
-            },
+            // {
+            //   title: "Modify Roles",
+            //   route: "/employees/roles",
+            //   className: "bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 text-white",
+            // },
             {
               title: "Attendance",
               route: "/attendance",
@@ -107,11 +137,11 @@ const AdminPage = () => {
               route: "/client/new",
               className: "bg-pink-500 dark:bg-pink-600 hover:bg-pink-600 dark:hover:bg-pink-700 text-white",
             },
-            {
-              title: "Mark Paid",
-              route: "/salaries/mark-paid",
-              className: "bg-sky-500 dark:bg-sky-600 hover:bg-sky-600 dark:hover:bg-sky-700 text-white",
-            },
+            // {
+            //   title: "Mark Paid",
+            //   route: "/salaries/mark-paid",
+            //   className: "bg-sky-500 dark:bg-sky-600 hover:bg-sky-600 dark:hover:bg-sky-700 text-white",
+            // },
             {
               title: "Calculate Salary",
               route: "/salaries/calculate",
@@ -186,6 +216,7 @@ const AdminPage = () => {
               setSelectedEmployee(user);
               setOpen(true);
             }}
+            onDelete={handleDeleteEmployee}
           />
         </div>
       </section>
