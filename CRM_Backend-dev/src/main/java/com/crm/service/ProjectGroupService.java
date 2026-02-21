@@ -5,14 +5,12 @@ import com.crm.controller.Keys;
 import com.crm.exception.ForBiddenException;
 import com.crm.exception.NotFoundException;
 import com.crm.model.ClientDetails;
-import com.crm.model.Companys;
 import com.crm.model.Employee;
 import com.crm.model.ProjectGroupDetails;
 import com.crm.model.ProjectParticipant;
 import com.crm.model.Task;
 import com.crm.model.dto.ResponseDTO;
 import com.crm.repos.ClientDetailsRepository;
-import com.crm.repos.CompanyRepository;
 import com.crm.repos.EmployeeRepo;
 import com.crm.repos.ProjectGroupRepository;
 import com.crm.repos.ProjectParticipantRepository;
@@ -77,9 +75,6 @@ public class ProjectGroupService {
 
 	@Autowired
 	private ClientDetailsRepository clientDetailsRepository;
-
-	@Autowired
-	private CompanyRepository companyRepository;
 
 	@Autowired
 	private JwtBasedCurrentUserProvider basedCurrentUserProvider;
@@ -170,9 +165,8 @@ public class ProjectGroupService {
 
 	public ProjectDTO createProject(CreateProjectRequest request) {
 		TokenInfo tokenInfo = (TokenInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		System.out.print("TOKEN INFO: " + tokenInfo.toString());
 		Long companyId = tokenInfo.getCompanyId();
-		Companys company = companyRepository.findById(companyId)
-				.orElseThrow(() -> new NotFoundException("Company not found"));
 
 		ProjectGroupDetails project = new ProjectGroupDetails();
 		project.setProjectName(request.getProjectName());

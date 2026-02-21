@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface LeadRepository extends JpaRepository<Lead, Long> {
     Optional<Lead> findByPhoneNumber(String phoneNumber);
+
+    void deleteByEmployee(com.crm.model.Employee employee);
 }

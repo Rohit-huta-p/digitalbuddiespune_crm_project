@@ -1,0 +1,56 @@
+# Enable Complete Employee Deletion
+
+Currently, attempting to delete an employee from the HR dashboard or admin panel often fails with the message: `"Cannot delete [Employee Name] — they are assigned to active projects. Remove them from all projects first."`
+
+This error actually originates from the backend throwing a `DataIntegrityViolationException` because the employee is still referenced by other records in the database (Tasks, Leads, Salaries, Logs, etc.). To allow the user to properly delete the employee "from everywhere they are situated", we will update the backend [deleteEmployee](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/service/Employee_Service.java#243-262) method to gracefully remove or detach all associated records before deleting the employee.
+
+## Proposed Changes
+
+### `src/main/java/com/crm/repos/`
+We need to add a few methods to the Spring Data JPA repositories to allow deleting or fetching records associated with an employee.
+
+#### [MODIFY] [AttendanceRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/AttendanceRepository.java)
+- Add `void deleteByEmployee(com.crm.model.Employee employee);`
+
+#### [MODIFY] [LeadRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/LeadRepository.java)
+- Add `void deleteByEmployee(com.crm.model.Employee employee);`
+
+#### [MODIFY] [DailySalaryLogRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/DailySalaryLogRepository.java)
+- Add `void deleteByEmployeeId(Long employeeId);`
+
+#### [MODIFY] [MonthlySalaryLogRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/MonthlySalaryLogRepository.java)
+- Add `void deleteByEmployeeId(Long employeeId);`
+
+#### [MODIFY] [WorkTimeLocationLogRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/WorkTimeLocationLogRepository.java)
+- Add `void deleteByEmployeeId(Long employeeId);`
+
+#### [MODIFY] [OvertimeLogRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/OvertimeLogRepository.java)
+- Add `void deleteByEmployeeId(Long employeeId);`
+
+#### [MODIFY] [NotificationRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/NotificationRepository.java)
+- Add `void deleteByEmployeeId(Long employeeId);`
+
+#### [MODIFY] [EmployeeSalaryRepositary.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/EmployeeSalaryRepositary.java)
+- Add `void deleteByEmployeeId(Long employeeId);`
+
+#### [MODIFY] [TaskManagementRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/TaskManagementRepository.java)
+- Add `List<com.crm.model.Task> findByAssignedEmployeesContaining(com.crm.model.Employee employee);`
+
+#### [MODIFY] [GroupChatRepository.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/repos/GroupChatRepository.java)
+- Add `List<com.crm.model.GroupChat> findByParticipantsContaining(com.crm.model.Employee employee);`
+
+---
+
+### `src/main/java/com/crm/service/`
+
+#### [MODIFY] [Employee_Service.java](file:///Users/rohithutagonna/Documents/Rohit/digitalbuddies/CRM-Project/CRM_Backend-dev/src/main/java/com/crm/service/Employee_Service.java)
+- **`deleteEmployee(long id)` method:** Before calling `repo.deleteById(id)`, we will call all the new repository methods to delete the employee's logs, attendances, leads, notifications, and salary records. For `Task` and `GroupChat`, we will fetch the records containing this employee, remove the employee from their respective participant lists, and save the updated records. Lastly, we can delete the employee safely without triggering foreign key constraint errors. We will also inject `GroupChatRepository` into the service.
+
+## Verification Plan
+
+### Automated Tests
+- The backend is currently running with `mvn spring-boot:run`. When the changes are made, the backend will auto-reload.
+
+### Manual Verification
+- Attempt to delete the `ValidationUserThree` from the frontend HR dashboard or via Postman if applicable. 
+- It should succeed with a 200 OK and delete the employee from the database, along with unassigning them from projects and tasks, and deleting their salary logs and attendance records.

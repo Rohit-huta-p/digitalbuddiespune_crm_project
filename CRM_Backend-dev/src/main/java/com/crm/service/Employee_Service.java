@@ -58,6 +58,9 @@ public class Employee_Service {
     private com.crm.repos.ClientDetailsRepository clientDetailsRepository;
 
     @Autowired
+    private com.crm.repos.GroupChatRepository groupChatRepository;
+
+    @Autowired
     private com.crm.repos.AttendanceRepository attendanceRepository;
 
     @Autowired
@@ -256,6 +259,34 @@ public class Employee_Service {
 
         // Remove all project participation records for this employee
         projectParticipantRepository.deleteByEmployee(employee);
+
+        // Remove employee from all tasks
+        List<com.crm.model.Task> tasks = taskRepository.findByAssignedEmployeesContaining(employee);
+        for (com.crm.model.Task task : tasks) {
+            task.getAssignedEmployees().remove(employee);
+            taskRepository.save(task);
+        }
+
+        // Remove employee from all group chats
+        List<com.crm.model.GroupChat> groupChats = groupChatRepository.findByParticipantsContaining(employee);
+        for (com.crm.model.GroupChat chat : groupChats) {
+            chat.getParticipants().remove(employee);
+            groupChatRepository.save(chat);
+        }
+
+        // Delete all leads associated with the employee
+        leadRepository.deleteByEmployee(employee);
+
+        // Delete all attendance records
+        attendanceRepository.deleteByEmployee(employee);
+
+        // Delete all logs and salaries
+        dailySalaryLogRepository.deleteByEmployeeId(id);
+        monthlySalaryLogRepository.deleteByEmployeeId(id);
+        workTimeLocationLogRepository.deleteByEmployeeId(id);
+        overtimeLogRepository.deleteByEmployeeId(id);
+        notificationRepository.deleteByEmployeeId(id);
+        employeeSalaryRepositary.deleteByEmployeeId(id);
 
         repo.deleteById(id);
     }

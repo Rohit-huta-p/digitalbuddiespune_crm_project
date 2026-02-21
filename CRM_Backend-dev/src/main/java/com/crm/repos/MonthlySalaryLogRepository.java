@@ -12,10 +12,11 @@ import java.util.Optional;
 import java.util.List;
 
 public interface MonthlySalaryLogRepository extends JpaRepository<MonthlySalaryLog, Long> {
-    
+
     @Query("SELECT m FROM MonthlySalaryLog m WHERE m.employeeId = :employeeId AND m.month = :month")
-    Optional<MonthlySalaryLog> findByEmployeeIdAndMonth(@Param("employeeId") Long employeeId, @Param("month") String month);
-    
+    Optional<MonthlySalaryLog> findByEmployeeIdAndMonth(@Param("employeeId") Long employeeId,
+            @Param("month") String month);
+
     // Method to find salary logs by employeeId with pagination
     Page<MonthlySalaryLog> findByEmployeeId(Long employeeId, Pageable pageable);
 
@@ -24,6 +25,8 @@ public interface MonthlySalaryLogRepository extends JpaRepository<MonthlySalaryL
 
     // Method to find salary logs by employeeId and status with pagination
     Page<MonthlySalaryLog> findByEmployeeIdAndStatus(Long employeeId, Boolean status, Pageable pageable);
-    
-   // List<MonthlySalaryLog> findByMonth(YearMonth month);
+
+    // List<MonthlySalaryLog> findByMonth(YearMonth month);
+
+    void deleteByEmployeeId(Long employeeId);
 }

@@ -33,4 +33,6 @@ public interface TaskManagementRepository extends JpaRepository<Task, Long> {
     Page<Task> findByCompanyIdAndStatus(Long companyId, String status, Pageable pageable);
 
     Page<Task> findByAssignedEmployees_IdAndProjectGroup_ProjectId(Long employeeId, Long projectId, Pageable pageable);
+
+    List<Task> findByAssignedEmployeesContaining(com.crm.model.Employee employee);
 }

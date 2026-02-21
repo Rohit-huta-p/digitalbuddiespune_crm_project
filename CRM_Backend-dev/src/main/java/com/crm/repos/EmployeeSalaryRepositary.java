@@ -7,6 +7,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EmployeeSalaryRepositary extends JpaRepository<EmployeeSalary, Long> {
-	 Optional<EmployeeSalary>findByEmployeeId(long employeeId);
-	
+	Optional<EmployeeSalary> findByEmployeeId(long employeeId);
+
+	void deleteByEmployeeId(Long employeeId);
+
 }
