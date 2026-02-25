@@ -7,10 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
+public interface NotifyRepository extends JpaRepository<Task, Long> {
 
-public interface NotifyRepository extends JpaRepository<Task,Long>  {
-
-    @Query(value = "SELECT assign_to_employee_id AS id,email AS email,task_name AS taskName FROM task_management WHERE  DATE(deadline_time) = CURDATE()",nativeQuery = true)
+    @Query("SELECT new com.crm.model.dto.NotifyDto(e.id, e.email, t.taskName) " +
+            "FROM Task t JOIN t.assignedEmployees e " +
+            "WHERE FUNCTION('DATE', t.deadlineTimestamp) = CURDATE()")
     List<NotifyDto> findByDeadlineTimestamp();
 
 }

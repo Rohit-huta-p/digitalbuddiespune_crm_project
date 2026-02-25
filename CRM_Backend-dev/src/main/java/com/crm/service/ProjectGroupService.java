@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,8 +184,10 @@ public class ProjectGroupService {
 
 		ProjectGroupDetails savedProject = projectGroupRepository.save(project);
 
-		List<Employee> groupLeaders = employeeRepo.findAllById(request.getGroupLeaderIds());
-		if (groupLeaders.size() != request.getGroupLeaderIds().size()) {
+		// Validate that all group leader IDs exist
+		List<Long> leaderIds = request.getGroupLeaderIds();
+		List<Employee> groupLeaderEmployees = employeeRepo.findAllById(leaderIds);
+		if (groupLeaderEmployees.size() != leaderIds.size()) {
 			throw new NotFoundException("Some group leaders not found");
 		}
 
@@ -195,12 +198,18 @@ public class ProjectGroupService {
 			ProjectParticipant participant = new ProjectParticipant();
 			participant.setProjectGroup(savedProject);
 			participant.setEmployee(employee);
-			participant.setRole(pRequest.getRole());
+
+			// If this participant is also a group leader, set role to "Leader"
+			if (leaderIds.contains(pRequest.getId())) {
+				participant.setRole("Leader");
+			} else {
+				participant.setRole(pRequest.getRole());
+			}
 			return participant;
 		}).collect(Collectors.toList());
 
 		// Validate leaders are participants
-		for (Employee leader : groupLeaders) {
+		for (Employee leader : groupLeaderEmployees) {
 			boolean isParticipant = participants.stream()
 					.anyMatch(p -> p.getEmployee().getId() == leader.getId());
 			if (!isParticipant) {
@@ -209,11 +218,10 @@ public class ProjectGroupService {
 			}
 		}
 
-		savedProject.setGroupLeaders(groupLeaders);
 		savedProject.setParticipants(participants);
 
 		projectGroupRepository.save(savedProject);
-		participantRepository.saveAll(participants); // Explicit save might be needed if cascade not set
+		participantRepository.saveAll(participants);
 
 		// Notifications
 		participants.forEach(p -> {
@@ -247,7 +255,15 @@ public class ProjectGroupService {
 			dto.setClientName(project.getClient().getName());
 		}
 
-		dto.setGroupLeaderIds(project.getGroupLeaders().stream().map(Employee::getId).collect(Collectors.toList()));
+		// Derive group leader IDs from participants with role "Leader"
+		if (project.getParticipants() != null) {
+			dto.setGroupLeaderIds(project.getParticipants().stream()
+					.filter(p -> "Leader".equalsIgnoreCase(p.getRole()))
+					.map(p -> p.getEmployee().getId())
+					.collect(Collectors.toList()));
+		} else {
+			dto.setGroupLeaderIds(Collections.emptyList());
+		}
 
 		dto.setParticipants(project.getParticipants().stream().map(p -> {
 			ProjectParticipantDTO pDto = new ProjectParticipantDTO();
@@ -307,7 +323,6 @@ public class ProjectGroupService {
 			}
 			task.setAssignedBy(assignedById);
 
-			task.setEmail((String) taskData.get(Constants.FIELD_EMAIL));
 			task.setProjectGroup(projectGroup);
 
 			// Get assigned employee IDs

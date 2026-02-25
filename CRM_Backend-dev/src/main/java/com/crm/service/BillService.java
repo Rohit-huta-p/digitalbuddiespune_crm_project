@@ -68,6 +68,24 @@ public class BillService {
         bill.setBillDueDate(LocalDate.parse(request.get(Constants.BILL_DUE_DATE).toString()));
         bill.setCompanyId(companyId);
 
+        if (request.containsKey("taxAmount") && request.get("taxAmount") != null
+                && !request.get("taxAmount").toString().isEmpty()) {
+            bill.setTaxAmount(Double.parseDouble(request.get("taxAmount").toString()));
+        }
+        if (request.containsKey("discountAmount") && request.get("discountAmount") != null
+                && !request.get("discountAmount").toString().isEmpty()) {
+            bill.setDiscountAmount(Double.parseDouble(request.get("discountAmount").toString()));
+        }
+        if (request.containsKey("paymentMethod") && request.get("paymentMethod") != null) {
+            bill.setPaymentMethod(request.get("paymentMethod").toString());
+        }
+        if (request.containsKey("notes") && request.get("notes") != null) {
+            bill.setNotes(request.get("notes").toString());
+        }
+        if (request.containsKey("billingAddress") && request.get("billingAddress") != null) {
+            bill.setBillingAddress(request.get("billingAddress").toString());
+        }
+
         // ✅ Invoice Number Handling
         String invoiceNumber = null;
         if (request.containsKey("invoiceNumber") && request.get("invoiceNumber") != null) {
@@ -129,6 +147,11 @@ public class BillService {
             billMap.put("generatedBy", bill.getGeneratedBy());
             billMap.put("billingDate", bill.getBillingDate());
             billMap.put("billDueDate", bill.getBillDueDate());
+            billMap.put("taxAmount", bill.getTaxAmount());
+            billMap.put("discountAmount", bill.getDiscountAmount());
+            billMap.put("paymentMethod", bill.getPaymentMethod());
+            billMap.put("notes", bill.getNotes());
+            billMap.put("billingAddress", bill.getBillingAddress());
             String status = bill.isPending() ? "PAID" : "PENDING";
             billMap.put("status", status);
             billMap.put(Constants.COMPANY_ID, bill.getCompanyId());
@@ -205,8 +228,7 @@ public class BillService {
                 (phno != null && !phno.trim().isEmpty()) ? phno.trim() : null,
                 isPending,
                 requestCompanyId,
-                pageable
-        );
+                pageable);
 
         if (billPage.isEmpty()) {
             throw new NotFoundException("No records found matching the given filters.");
@@ -225,6 +247,11 @@ public class BillService {
             billMap.put("generatedBy", bill.getGeneratedBy());
             billMap.put("billingDate", bill.getBillingDate());
             billMap.put("billDueDate", bill.getBillDueDate());
+            billMap.put("taxAmount", bill.getTaxAmount());
+            billMap.put("discountAmount", bill.getDiscountAmount());
+            billMap.put("paymentMethod", bill.getPaymentMethod());
+            billMap.put("notes", bill.getNotes());
+            billMap.put("billingAddress", bill.getBillingAddress());
             billMap.put(Constants.COMPANY_ID, bill.getCompanyId());
             String statusText = bill.isPending() ? "PAID" : "PENDING";
             billMap.put("status", statusText);

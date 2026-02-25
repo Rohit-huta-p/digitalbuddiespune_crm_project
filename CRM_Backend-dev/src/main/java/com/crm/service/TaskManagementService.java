@@ -51,9 +51,6 @@ public class TaskManagementService {
 
 	public void createTask(Map<String, ?> taskData) {
 		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId = Long.parseLong(taskData.get(Constants.COMPANY_ID).toString());
-		if (!companyId.equals(requestCompanyId))
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
 
 		Task task = new Task();
 		task.setTaskName((String) taskData.get(Constants.FIELD_TASK_NAME));
@@ -62,9 +59,8 @@ public class TaskManagementService {
 				: null);
 		task.setAssignedTimestamp(LocalDateTime.now());
 		task.setDeadlineTimestamp(LocalDateTime.parse((String) taskData.get(Constants.FIELD_DEADLINE_TIMESTAMP)));
-		task.setEmail((String) taskData.get(Constants.FIELD_EMAIL));
 		task.setPriority((String) taskData.get(Constants.PRIORITY));
-		task.setCompanyId(requestCompanyId);
+		task.setCompanyId(companyId);
 		task.setStatus(taskData.get(Constants.FIELD_STATUS).toString().toLowerCase());
 		task.setAssignedBy(Long.valueOf(taskData.get(Constants.FIELD_ASSIGNED_BY).toString()));
 
@@ -97,7 +93,6 @@ public class TaskManagementService {
 				: null);
 		task.setAssignedTimestamp(LocalDateTime.now());
 		task.setDeadlineTimestamp(LocalDateTime.parse((String) taskData.get(Constants.FIELD_DEADLINE_TIMESTAMP)));
-		task.setEmail((String) taskData.get(Constants.FIELD_EMAIL));
 		task.setStatus(taskData.get(Constants.FIELD_STATUS).toString().toLowerCase());
 		task.setAssignedBy(Long.valueOf(taskData.get(Constants.FIELD_ASSIGNED_BY).toString()));
 
@@ -141,12 +136,8 @@ public class TaskManagementService {
 		LOGGER.info("Executing getAllTasks()");
 
 		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		if (companyId != requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
 
-		List<Task> tasks = taskRepository.findByCompanyId(requestCompanyId);
+		List<Task> tasks = taskRepository.findByCompanyId(companyId);
 
 		return tasks.stream().map(task -> {
 			Map<String, Object> taskMap = new HashMap<>();
@@ -157,7 +148,6 @@ public class TaskManagementService {
 			taskMap.put("deadlineTimestamp", task.getDeadlineTimestamp().toString());
 			taskMap.put("status", task.getStatus());
 			taskMap.put("assignedBy", task.getAssignedBy());
-			taskMap.put("email", task.getEmail());
 			taskMap.put("priority", task.getPriority());
 			taskMap.put(Constants.COMPANY_ID, task.getCompanyId());
 			// ✅ Return assigned employee IDs as a List instead of a String
@@ -271,16 +261,13 @@ public class TaskManagementService {
 	// }
 	public Task updateTask(long id, Map<String, ?> taskData) {
 		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId = Long.parseLong(taskData.get(Constants.COMPANY_ID).toString());
-		if (!companyId.equals(requestCompanyId))
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-
-		LOGGER.info("updateTask called for id={} requestCompanyId={} currentCompanyId={}", id, requestCompanyId, companyId);
+		LOGGER.info("updateTask called for id={} currentCompanyId={}", id, companyId);
 
 		Task existingTask = taskRepository.findById(id)
 				.orElseThrow(() -> new NotFoundException("Task not found with id: " + id));
 
-		LOGGER.info("Existing task before update: id={} status={} assignedBy={} deadline={}", existingTask.getId(), existingTask.getStatus(), existingTask.getAssignedBy(), existingTask.getDeadlineTimestamp());
+		LOGGER.info("Existing task before update: id={} status={} assignedBy={} deadline={}", existingTask.getId(),
+				existingTask.getStatus(), existingTask.getAssignedBy(), existingTask.getDeadlineTimestamp());
 
 		taskData.forEach((key, value) -> {
 			if (value == null)
@@ -309,7 +296,6 @@ public class TaskManagementService {
 						existingTask.setCompletionTime(null);
 				}
 				case "assignedBy" -> existingTask.setAssignedBy(Long.valueOf(value.toString()));
-				case "email" -> existingTask.setEmail((String) value);
 				case "assignedToEmployeeId" -> {
 					@SuppressWarnings("unchecked")
 					List<Integer> employeeIds = (List<Integer>) value;
@@ -365,7 +351,6 @@ public class TaskManagementService {
 				case Constants.FIELD_DESCRIPTION -> existingTask.setDescription((String) value);
 				case Constants.FIELD_DEADLINE_TIMESTAMP ->
 					existingTask.setDeadlineTimestamp(LocalDateTime.parse((String) value));
-				case Constants.FIELD_EMAIL -> existingTask.setEmail((String) value);
 				case Constants.FIELD_STATUS -> existingTask.setStatus(value.toString().toLowerCase());
 			}
 		});
@@ -411,10 +396,6 @@ public class TaskManagementService {
 
 	public List<Map<String, Object>> getTasksByEmployeeId(Map<String, ?> request) {
 		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId = Long.parseLong(request.get(Constants.COMPANY_ID).toString());
-		if (!companyId.equals(requestCompanyId)) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
 
 		Long employeeId = Long.parseLong(request.get(Keys.ID).toString());
 		List<Task> tasks = taskRepository.findByAssignedEmployees_Id(employeeId);
@@ -443,10 +424,6 @@ public class TaskManagementService {
 	public void deleteTask(Long id, Map<String, ?> taskData) {
 
 		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId = Long.parseLong(taskData.get(Constants.COMPANY_ID).toString());
-		if (companyId != requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
 
 		if (taskRepository.existsById(id)) {
 			taskRepository.deleteById(id);
@@ -459,10 +436,7 @@ public class TaskManagementService {
 	public void assignTaskToSelf(Map<String, ?> taskData) {
 
 		Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
-		Long requestCompanyId = Long.parseLong(taskData.get(Constants.COMPANY_ID).toString());
-		if (companyId != requestCompanyId) {
-			throw new ForBiddenException(Constants.COMPANY_ACCESS_DENIED);
-		}
+
 		// Extract employee ID from the task data
 		Long employeeId = Long.parseLong(taskData.get(Constants.FIELD_ASSIGNED_BY).toString());
 
@@ -493,13 +467,11 @@ public class TaskManagementService {
 		task.setDescription((String) taskData.get(Constants.FIELD_DESCRIPTION));
 		task.setAssignedTimestamp(LocalDateTime.now());
 		task.setDeadlineTimestamp(LocalDateTime.parse((String) taskData.get(Constants.FIELD_DEADLINE_TIMESTAMP)));
-		task.setEmail((String) taskData.get(Constants.FIELD_EMAIL));
 		task.setPriority((String) taskData.get(Constants.PRIORITY));
 		String status = taskData.get(Constants.FIELD_STATUS).toString().toLowerCase();
 		task.setStatus(status);
-		task.setCompanyId(requestCompanyId);
+		task.setCompanyId(companyId);
 		task.setAssignedBy(employeeId); // Set the employee assigning to themselves
-		task.setCompanyId(requestCompanyId);
 		// Find the employee from the database using the provided ID
 		Employee assignedEmployee = employeeRepo.findById(employeeId)
 				.orElseThrow(() -> new NotFoundException("Employee not found with ID: " + employeeId));

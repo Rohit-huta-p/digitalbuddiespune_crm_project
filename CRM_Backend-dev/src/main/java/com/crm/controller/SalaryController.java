@@ -37,25 +37,12 @@ public class SalaryController {
 
         // Optional manual tax
         Double manualTaxPercentage = null;
-        if(request.containsKey("manualTaxPercentage") && request.get("manualTaxPercentage") != null) {
+        if (request.containsKey("manualTaxPercentage") && request.get("manualTaxPercentage") != null) {
             manualTaxPercentage = Double.parseDouble(request.get("manualTaxPercentage").toString());
         }
 
-        // Calculate salary and log
-        double totalSalary = salaryService.calculateAndLogDailySalary(id, manualTaxPercentage);
-
-        // Fetch tax percentage (manual or default)
-        double taxPercentage = (manualTaxPercentage != null) ? manualTaxPercentage : salaryService.getEmployeeTaxPercentage(id);
-
-        // Calculate tax amount applied
-        double taxAmount = (taxPercentage / 100) * totalSalary / (1 - taxPercentage / 100);
-
-        // Prepare response
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", id);
-        response.put("totalSalary", totalSalary);   // Net salary after tax
-        response.put("taxPercentage", taxPercentage);
-        response.put("taxAmount", taxAmount);
+        // Calculate salary and log (returns detailed breakdown Map)
+        Map<String, Object> response = salaryService.calculateAndLogDailySalary(id, manualTaxPercentage);
 
         return ResponseEntity.ok(response);
     }
@@ -87,8 +74,8 @@ public class SalaryController {
      */
     @PostMapping("/getSalaries")
     public ResponseEntity<Map<String, Object>> getSalaryRecords(@RequestBody(required = false) Map<String, ?> filters,
-                                                                @RequestParam(name = "pageNum", required = true) Integer pageNum,
-                                                                @RequestParam(name = "pageSize", required = true) Integer pageSize) {
+            @RequestParam(name = "pageNum", required = true) Integer pageNum,
+            @RequestParam(name = "pageSize", required = true) Integer pageSize) {
 
         if (filters == null) {
             filters = new HashMap<>();

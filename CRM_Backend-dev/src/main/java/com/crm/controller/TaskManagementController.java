@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/task")
-//@CrossOrigin(origins = "http://localhost:3000") 
+// @CrossOrigin(origins = "http://localhost:3000")
 public class TaskManagementController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagementController.class);
@@ -26,19 +26,17 @@ public class TaskManagementController {
 	@Autowired
 	TaskManagementService taskManagementService;
 
-    @Autowired
-    private WorkTimeLocationService workTimeLocationService;
+	@Autowired
+	private WorkTimeLocationService workTimeLocationService;
 
-
-    @PostMapping("/createTask")
+	@PostMapping("/createTask")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> createTask(@RequestBody Map<String, ?> taskData) {
 
 		new RequestValidator(taskData).hasString(Constants.FIELD_TASK_NAME).hasString(Constants.FIELD_DESCRIPTION)
-				.hasEmail(Constants.FIELD_EMAIL,false).hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
+				.hasEmail(Constants.FIELD_EMAIL, false).hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
 				.hasValidTaskStatus(Constants.FIELD_STATUS).hasValidAssignBy(Constants.FIELD_ASSIGNED_BY)
 				.hasValidParticipantIds(Constants.FIELD_ASSIGNED_TO_EMPLOYEE_ID)
-				.hasValidPriority(Constants.PRIORITY)
-				.hasId(Constants.COMPANY_ID,true);
+				.hasValidPriority(Constants.PRIORITY);
 
 		taskManagementService.createTask(taskData);
 
@@ -54,9 +52,9 @@ public class TaskManagementController {
 
 	@PostMapping("/createGroupTask")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> createGroupTask(@RequestBody Map<String, ?> taskData) {
-//        if (!taskData.containsKey(Constants.FIELD_GROUP_ID)) {
-//            throw new BadRequestException("groupId is required.");
-//        }
+		// if (!taskData.containsKey(Constants.FIELD_GROUP_ID)) {
+		// throw new BadRequestException("groupId is required.");
+		// }
 		new RequestValidator(taskData).hasString(Constants.FIELD_TASK_NAME).hasString(Constants.FIELD_DESCRIPTION)
 				.hasEmail(Constants.FIELD_EMAIL).hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
 				.hasValidTaskStatus(Constants.FIELD_STATUS).hasLong(Constants.FIELD_ASSIGNED_BY)
@@ -76,10 +74,9 @@ public class TaskManagementController {
 	}
 
 	@PostMapping("/getAll")
-	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllTasks(@RequestBody Map<String,?>request) {
-		
-		new RequestValidator(request)
-			.hasId(Constants.COMPANY_ID, true);
+	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAllTasks(@RequestBody Map<String, ?> request) {
+
+		// No request body validation needed for companyId
 
 		List<Map<String, Object>> task = taskManagementService.getAllTasks(request);
 		Map<String, Object> responseAttributes = new HashMap<>();
@@ -94,15 +91,14 @@ public class TaskManagementController {
 	@PostMapping("/update")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> updateTask(@RequestBody Map<String, ?> taskData) {
 
-		new RequestValidator(taskData).hasLong(Keys.ID)
-			.hasId(Constants.COMPANY_ID, true);
-//    	.hasString(Constants.FIELD_TASK_NAME)
-//        .hasString(Constants.FIELD_DESCRIPTION)
-//    	.hasEmail(Constants.FIELD_EMAIL)
-//    	.hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
-//    	.hasValidTaskStatus(Constants.FIELD_STATUS)
-//    	.hasValidAssignBy(Constants.FIELD_ASSIGNED_BY)
-//    	.hasValidParticipantIds(Constants.FIELD_ASSIGNED_TO_EMPLOYEE_ID);
+		new RequestValidator(taskData).hasLong(Keys.ID);
+		// .hasString(Constants.FIELD_TASK_NAME)
+		// .hasString(Constants.FIELD_DESCRIPTION)
+		// .hasEmail(Constants.FIELD_EMAIL)
+		// .hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
+		// .hasValidTaskStatus(Constants.FIELD_STATUS)
+		// .hasValidAssignBy(Constants.FIELD_ASSIGNED_BY)
+		// .hasValidParticipantIds(Constants.FIELD_ASSIGNED_TO_EMPLOYEE_ID);
 
 		long id = Long.parseLong(taskData.get(Keys.ID).toString());
 
@@ -143,30 +139,26 @@ public class TaskManagementController {
 		// Return the response wrapped in ResponseEntity
 		return ResponseEntity.ok(responseDTO);
 	}
-    @PostMapping("/attendanceHistory")
-    public ResponseEntity<ResponseDTO<Map<String, Object>>> getAttendanceHistory(@RequestBody Map<String, ?> request) {
-        Long employeeId = Long.parseLong(request.get("employeeId").toString());
 
-        List<Map<String, Object>> history = workTimeLocationService.getAttendanceHistory(employeeId);
+	@PostMapping("/attendanceHistory")
+	public ResponseEntity<ResponseDTO<Map<String, Object>>> getAttendanceHistory(@RequestBody Map<String, ?> request) {
+		Long employeeId = Long.parseLong(request.get("employeeId").toString());
 
-        Map<String, Object> responseAttributes = new HashMap<>();
-        responseAttributes.put("attendanceHistory", history);
+		List<Map<String, Object>> history = workTimeLocationService.getAttendanceHistory(employeeId);
 
-        ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
-        responseDTO.setAttributes(responseAttributes);
+		Map<String, Object> responseAttributes = new HashMap<>();
+		responseAttributes.put("attendanceHistory", history);
 
-        return ResponseEntity.ok(responseDTO);
-    }
+		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
+		responseDTO.setAttributes(responseAttributes);
 
+		return ResponseEntity.ok(responseDTO);
+	}
 
-
-    @PostMapping("/getByEmployeeId")
+	@PostMapping("/getByEmployeeId")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> getTasksByEmployeeId(@RequestBody Map<String, ?> request) {
 
-		new RequestValidator(request).hasId(Keys.ID, false)
-			.hasId(Constants.COMPANY_ID, false);
-
-	
+		new RequestValidator(request).hasId(Keys.ID, false);
 
 		List<Map<String, Object>> tasks = taskManagementService.getTasksByEmployeeId(request);
 
@@ -182,11 +174,10 @@ public class TaskManagementController {
 	@PostMapping("/delete")
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> deleteTask(@RequestBody Map<String, ?> requestData) {
 
-		new RequestValidator(requestData).hasLong(Keys.ID)
-			.hasId(Constants.COMPANY_ID, true);
+		new RequestValidator(requestData).hasLong(Keys.ID);
 
 		long id = Long.parseLong(requestData.get(Keys.ID).toString());
-		taskManagementService.deleteTask(id,requestData);
+		taskManagementService.deleteTask(id, requestData);
 
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("message", "Task Deleted SuccessFully");
@@ -201,11 +192,10 @@ public class TaskManagementController {
 	public ResponseEntity<ResponseDTO<Map<String, Object>>> assignTaskToSelf(@RequestBody Map<String, ?> taskData) {
 
 		new RequestValidator(taskData).hasString(Constants.FIELD_TASK_NAME).hasString(Constants.FIELD_DESCRIPTION)
-				.hasEmail(Constants.FIELD_EMAIL,false).hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
+				.hasEmail(Constants.FIELD_EMAIL, false).hasValidDateTime(Constants.FIELD_DEADLINE_TIMESTAMP)
 				.hasValidTaskStatus(Constants.FIELD_STATUS).hasString(Constants.FIELD_ASSIGNED_BY)
 				.hasValidParticipantIds(Constants.FIELD_ASSIGNED_TO_EMPLOYEE_ID)
-				.hasValidPriority(Constants.PRIORITY)
-				.hasId(Constants.COMPANY_ID,true);
+				.hasValidPriority(Constants.PRIORITY);
 		// Call the service method to assign the task
 		taskManagementService.assignTaskToSelf(taskData);
 

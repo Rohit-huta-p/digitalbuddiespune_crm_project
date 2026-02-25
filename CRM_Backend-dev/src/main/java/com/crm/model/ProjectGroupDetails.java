@@ -1,7 +1,9 @@
 package com.crm.model;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -12,8 +14,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -47,23 +47,28 @@ public class ProjectGroupDetails {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
 
-	 @OneToMany(mappedBy = "projectGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-	  private List<ProjectParticipant> participants;
-
-	
-	 @ManyToMany
-	 private List<Employee>groupLeaders;
+	@OneToMany(mappedBy = "projectGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProjectParticipant> participants;
 
 	@Column(name = "status")
 	private String status;
-	
+
 	@Column(name = "company_id", nullable = false)
 	private Long companyId;
-
 
 	@ManyToOne
 	@JoinColumn(name = "client_id", referencedColumnName = "id", nullable = true)
 	private ClientDetails client;
 
-	
+	/**
+	 * Helper: derive group leaders from participants with role "Leader".
+	 */
+	public List<Employee> getGroupLeaders() {
+		if (participants == null)
+			return Collections.emptyList();
+		return participants.stream()
+				.filter(p -> "Leader".equalsIgnoreCase(p.getRole()))
+				.map(ProjectParticipant::getEmployee)
+				.collect(Collectors.toList());
+	}
 }

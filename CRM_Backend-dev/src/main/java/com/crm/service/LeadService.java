@@ -1,6 +1,7 @@
 // ✅ NEW FILE CREATED
 package com.crm.service;
 
+import com.crm.model.Employee;
 import com.crm.model.FollowUp;
 import com.crm.model.Lead;
 import com.crm.repos.FollowUpRepository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class LeadService {
@@ -60,6 +62,33 @@ public class LeadService {
         Lead lead = leadRepository.findById(leadId)
                 .orElseThrow(() -> new IllegalArgumentException("Lead not found: " + leadId));
         lead.setStatus(status);
+        lead.setUpdatedAt(LocalDateTime.now());
+        return leadRepository.save(lead);
+    }
+
+    @Transactional
+    public Lead updateLead(Long leadId, Map<String, Object> fields) {
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new IllegalArgumentException("Lead not found: " + leadId));
+
+        if (fields.containsKey("name")) {
+            lead.setName(fields.get("name").toString());
+        }
+        if (fields.containsKey("phoneNumber")) {
+            lead.setPhoneNumber(fields.get("phoneNumber").toString());
+        }
+        if (fields.containsKey("business")) {
+            lead.setBusiness(fields.get("business").toString());
+        }
+        if (fields.containsKey("status")) {
+            lead.setStatus(fields.get("status").toString());
+        }
+        if (fields.containsKey("employeeId")) {
+            Employee emp = new Employee();
+            emp.setId(Long.parseLong(fields.get("employeeId").toString()));
+            lead.setEmployee(emp);
+        }
+
         lead.setUpdatedAt(LocalDateTime.now());
         return leadRepository.save(lead);
     }

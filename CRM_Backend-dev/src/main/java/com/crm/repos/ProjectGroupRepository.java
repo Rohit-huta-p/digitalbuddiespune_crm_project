@@ -5,11 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.crm.model.Employee;
 import com.crm.model.ProjectGroupDetails;
 
 @Repository
@@ -20,9 +17,6 @@ public interface ProjectGroupRepository extends JpaRepository<ProjectGroupDetail
 	Page<ProjectGroupDetails> findByCompanyIdAndStatus(Long companyId, String status, Pageable pageable);
 
 	List<ProjectGroupDetails> findByCompanyId(Long companyId);
-
-	@Query("SELECT p FROM ProjectGroupDetails p JOIN p.groupLeaders g WHERE g = :employee")
-	List<ProjectGroupDetails> findByGroupLeadersContaining(@Param("employee") Employee employee);
 
 	List<ProjectGroupDetails> findByClient_ClientId(Long clientId);
 

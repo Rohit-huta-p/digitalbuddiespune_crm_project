@@ -43,10 +43,7 @@ public class SalaryService {
     EmployeeRepo employeeRepo;
 
     @Autowired
-    private WorkTimeLocationLogRepository employeeLogRepository;
-
-    @Autowired
-    private OvertimeLogRepository overtimeLogRepository;
+    private com.crm.repos.BillRepository billRepository;
 
     @Autowired
     private DailySalaryLogRepository dailySalaryLogRepository;
@@ -60,64 +57,65 @@ public class SalaryService {
 
     // Old method (kept for backward compatibility)
     public double calculateAndLogDailySalary(Long employeeId) {
-        return calculateAndLogDailySalary(employeeId, null);
+        Map<String, Object> result = calculateAndLogDailySalary(employeeId, null);
+        return (double) result.get("netSalary");
     }
 
-    // New method with manual tax percentage
-    public double calculateAndLogDailySalary(Long employeeId, Double manualTaxPercentage) {
+    // New method with Base + Commission model (Overrides "Daily" context but keeps
+    // API compatibility)
+    public Map<String, Object> calculateAndLogDailySalary(Long employeeId, Double manualTaxPercentage) {
 
-        // Get latest employee login log
-        Optional<WorkTimeLocationLog> logOpt = employeeLogRepository
-                .findTopByEmployeeIdOrderByLoginTimeDesc(employeeId);
-        if (logOpt.isEmpty()) {
-            throw new NotFoundException("Employee log not found.");
-        }
-        WorkTimeLocationLog log = logOpt.get();
-        if (log.getLogoutTime() == null) {
-            throw new NotFoundException("Employee has not logged out yet.");
-        }
+        // 1. Get Employee for 'generatedBy' name
+        com.crm.model.Employee employee = employeeRepo.findById(employeeId)
+                .orElseThrow(() -> new NotFoundException("Employee not found for ID: " + employeeId));
 
-        // Get employee salary
+        // 2. Get Employee Salary Details
         EmployeeSalary salary = employeesalaryRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new NotFoundException("Salary details not found for ID: " + employeeId));
 
-        // Calculate worked minutes & base salary
-        long minutesWorked = Duration.between(log.getLoginTime(), log.getLogoutTime()).toMinutes();
-        double perMinuteSalary = SalaryUtil.convertHourlyToMinuteSalary(salary.getHourlySalary());
-        double totalSalary = minutesWorked * perMinuteSalary;
+        // 3. Base Salary
+        double baseSalary = salary.getMonthlySalary();
 
-        // Overtime calculation
-        double standardMinutes = 8 * 60;
-        if (minutesWorked > standardMinutes) {
-            double overtimeMinutes = minutesWorked - standardMinutes;
-            double overtimeSalary = SalaryUtil.calculateOvertimeSalary(overtimeMinutes, perMinuteSalary);
+        // 4. Calculate Commission from Bills generated this month
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfMonth(1);
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
 
-            OvertimeLog overtimeLog = new OvertimeLog();
-            overtimeLog.setEmployeeId(log.getEmployeeId());
-            overtimeLog.setDate(log.getLoginTime().toLocalDate());
-            overtimeLog.setOvertimeHours(overtimeMinutes / 60);
-            overtimeLogRepository.save(overtimeLog);
+        List<com.crm.model.Bill> generatedBills = billRepository.findBillsByGeneratedByAndDateRange(employee.getName(),
+                startDate, endDate);
 
-            totalSalary += overtimeSalary;
-        }
+        double totalBillAmount = generatedBills.stream().mapToDouble(com.crm.model.Bill::getBillAmount).sum();
+        double commissionEarned = (salary.getCommissionRate() / 100.0) * totalBillAmount;
 
-        // Tax calculation (manual or default from DB)
+        double grossSalary = baseSalary + commissionEarned;
+
+        // 5. Tax calculation (manual or default from DB)
         double taxPercentage = (manualTaxPercentage != null)
                 ? manualTaxPercentage
                 : salary.getTaxPercentage();
 
-        double taxAmount = (taxPercentage / 100) * totalSalary;
-        totalSalary -= taxAmount;
+        double taxAmount = (taxPercentage / 100) * grossSalary;
+        double netSalary = grossSalary - taxAmount;
 
-        // Log daily salary
+        // 6. Log it for backward compatibility
         DailySalaryLog dailySalaryLog = new DailySalaryLog();
-        dailySalaryLog.setEmployeeId(log.getEmployeeId());
-        dailySalaryLog.setDate(log.getLoginTime().toLocalDate());
-        dailySalaryLog.setDailySalary(totalSalary);
-        dailySalaryLog.setMinutesWorked(minutesWorked);
+        dailySalaryLog.setEmployeeId(employeeId);
+        dailySalaryLog.setDate(now);
+        dailySalaryLog.setDailySalary(netSalary);
+        dailySalaryLog.setMinutesWorked(0L); // Deprecated parameter in new CRM flow
         dailySalaryLogRepository.save(dailySalaryLog);
 
-        return totalSalary; // Net salary after tax
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", employeeId);
+        result.put("baseSalary", baseSalary);
+        result.put("commissionEarned", commissionEarned);
+        result.put("grossSalary", grossSalary);
+        result.put("taxPercentage", taxPercentage);
+        result.put("taxAmount", taxAmount);
+        result.put("netSalary", netSalary);
+        result.put("totalSalary", netSalary); // For backward compatibility with frontend
+
+        return result; // Detailed breakdown Map
     }
 
     // ---------------- Calculate and Save Monthly Salary ----------------
@@ -195,6 +193,12 @@ public class SalaryService {
         List<Map<String, Object>> salaryLogsList = salaryLogs.stream().map(log -> {
             Map<String, Object> logMap = new HashMap<>();
             logMap.put("employeeId", log.getEmployeeId());
+
+            String employeeName = employeeRepo.findById(log.getEmployeeId())
+                    .map(com.crm.model.Employee::getName)
+                    .orElse("Unknown Employee");
+
+            logMap.put("employeeName", employeeName);
             logMap.put("month", log.getMonth());
             logMap.put("status", log.isStatus() ? "paid" : "unpaid");
 

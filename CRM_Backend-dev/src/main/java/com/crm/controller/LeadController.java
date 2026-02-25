@@ -18,7 +18,9 @@ public class LeadController {
 
     private final LeadService service;
 
-    public LeadController(LeadService service) { this.service = service; }
+    public LeadController(LeadService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public ResponseEntity<LeadDTO> create(@RequestBody java.util.Map<String, Object> body) {
@@ -26,12 +28,12 @@ public class LeadController {
         lead.setName(body.get("name").toString());
         lead.setPhoneNumber(body.get("phoneNumber").toString());
         lead.setBusiness(body.get("business").toString());
-        
+
         // Set employee by creating a reference with just the ID
         Employee emp = new Employee();
         emp.setId(Long.parseLong(body.get("employeeId").toString()));
         lead.setEmployee(emp);
-        
+
         Lead saved = service.createLead(lead);
         return ResponseEntity.ok(LeadDTO.fromEntity(saved));
     }
@@ -48,7 +50,8 @@ public class LeadController {
     @GetMapping("/{id}")
     public ResponseEntity<LeadDTO> get(@PathVariable Long id) {
         Lead l = service.getById(id);
-        if (l == null) return ResponseEntity.notFound().build();
+        if (l == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(LeadDTO.fromEntity(l));
     }
 
@@ -72,6 +75,12 @@ public class LeadController {
         Long leadId = Long.parseLong(body.get("leadId").toString());
         String status = body.get("status").toString();
         Lead updated = service.updateLeadStatus(leadId, status);
+        return ResponseEntity.ok(LeadDTO.fromEntity(updated));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<LeadDTO> updateLead(@PathVariable Long id, @RequestBody java.util.Map<String, Object> body) {
+        Lead updated = service.updateLead(id, body);
         return ResponseEntity.ok(LeadDTO.fromEntity(updated));
     }
 }

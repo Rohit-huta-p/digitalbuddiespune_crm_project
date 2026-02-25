@@ -150,10 +150,16 @@ public class Employee_Service {
             double monthlySalary = Double.parseDouble(safelyGetString(employeeData, Constants.MONTHLY_SALARY));
             double hourlySalary = SalaryUtil.convertMonthlyToHourlySalary(monthlySalary);
 
+            double commissionRate = 0.0;
+            if (employeeData.containsKey("commissionRate") && employeeData.get("commissionRate") != null) {
+                commissionRate = Double.parseDouble(employeeData.get("commissionRate").toString());
+            }
+
             EmployeeSalary salary = new EmployeeSalary();
             salary.setEmployeeId(employeeId);
             salary.setMonthlySalary(monthlySalary);
             salary.setHourlySalary(hourlySalary);
+            salary.setCommissionRate(commissionRate);
 
             employeeSalaryRepositary.save(salary);
 
@@ -210,18 +216,24 @@ public class Employee_Service {
             }
         });
 
-        // Update monthly salary if provided
+        // Update monthly salary or commission if provided
+        boolean updateSalary = false;
+        EmployeeSalary salary = employeeSalaryRepositary.findByEmployeeId(id).orElse(new EmployeeSalary());
+        salary.setEmployeeId(id);
+
         if (employeeData.containsKey(Constants.MONTHLY_SALARY) && employeeData.get(Constants.MONTHLY_SALARY) != null) {
             double monthlySalary = Double.parseDouble(employeeData.get(Constants.MONTHLY_SALARY).toString());
-            double hourlySalary = SalaryUtil.convertMonthlyToHourlySalary(monthlySalary);
-
-            EmployeeSalary salary = employeeSalaryRepositary.findByEmployeeId(id)
-                    .orElse(new EmployeeSalary());
-
-            salary.setEmployeeId(id);
             salary.setMonthlySalary(monthlySalary);
-            salary.setHourlySalary(hourlySalary);
+            salary.setHourlySalary(SalaryUtil.convertMonthlyToHourlySalary(monthlySalary));
+            updateSalary = true;
+        }
 
+        if (employeeData.containsKey("commissionRate") && employeeData.get("commissionRate") != null) {
+            salary.setCommissionRate(Double.parseDouble(employeeData.get("commissionRate").toString()));
+            updateSalary = true;
+        }
+
+        if (updateSalary) {
             employeeSalaryRepositary.save(salary);
         }
 
@@ -249,13 +261,6 @@ public class Employee_Service {
 
         Employee employee = repo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Employee not found with id: " + id));
-
-        // Remove employee from all project group leader lists before deleting
-        List<ProjectGroupDetails> projectGroups = projectGroupRepository.findByGroupLeadersContaining(employee);
-        for (ProjectGroupDetails group : projectGroups) {
-            group.getGroupLeaders().remove(employee);
-            projectGroupRepository.save(group);
-        }
 
         // Remove all project participation records for this employee
         projectParticipantRepository.deleteByEmployee(employee);
@@ -375,10 +380,6 @@ public class Employee_Service {
 
         // 5. Orphan Projects (without clients or failed cascade)
         List<ProjectGroupDetails> projects = projectGroupRepository.findByCompanyId(companyId);
-        for (ProjectGroupDetails p : projects) {
-            p.getGroupLeaders().clear();
-            projectGroupRepository.save(p);
-        }
         projectGroupRepository.deleteAll(projects);
 
         // 6. Employees (Except Admin)

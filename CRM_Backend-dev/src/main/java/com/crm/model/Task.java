@@ -17,52 +17,49 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
+
     @Column(name = "task_name")
     private String taskName;
 
     @Column(name = "description", nullable = true)
     private String description;
-    
+
     @Column(name = "assigned_time")
     private LocalDateTime assignedTimestamp;
-    
+
     @Column(name = "deadline_time")
     private LocalDateTime deadlineTimestamp;
-    
+
     @Column(name = "status")
     private String status; // 1 - open, 2 - closed, 3 - pending
-    
+
     @Column(name = "assign_by")
-    private Long assignedBy; 
-    
-    @Column(name = "email")
-    private String email;
+    private Long assignedBy;
 
     @Column(name = "completion_time")
     private LocalDateTime completionTime;
-    //new
-    
-    @Column(name="priority",nullable = true)							
-    private String priority; 
-    
+    // new
+
+    @Column(name = "priority", nullable = true)
+    private String priority;
+
     @Column(name = "company_id", nullable = true)
     private Long companyId;
-    
+
     @ManyToMany()
     private List<Employee> assignedEmployees;
-    //new
+    // new
 
     @ManyToOne()
     @JoinColumn(name = "project_id", nullable = true)
     private ProjectGroupDetails projectGroup;
-    
-    public Task(String taskName, String description, LocalDateTime assignedTimestamp, LocalDateTime deadlineTimestamp, int status, Long assignedTo, Long assignedBy) {
+
+    public Task(String taskName, String description, LocalDateTime assignedTimestamp, LocalDateTime deadlineTimestamp,
+            int status, Long assignedTo, Long assignedBy) {
     }
 
     public List<Employee> getAssignedEmployees() {
         return assignedEmployees;
     }
-
 
 }

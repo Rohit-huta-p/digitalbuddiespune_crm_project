@@ -49,4 +49,19 @@ public class Bill {
     @Column(name = "invoice_number", unique = true, nullable = false)
     private String invoiceNumber;
 
+    @Column(name = "tax_amount")
+    private Double taxAmount;
+
+    @Column(name = "discount_amount")
+    private Double discountAmount;
+
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @Column(name = "billing_address", columnDefinition = "TEXT")
+    private String billingAddress;
+
 }
