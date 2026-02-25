@@ -11,13 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Settings, Trash2, User } from "lucide-react";
+import { Bell, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
 
 export function ProfileDropdown() {
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   const handleReset = async () => {
     if (!confirm("⚠️ DANGER: This will delete ALL data (Clients, Projects, Employees) except your Admin account. Are you sure?")) {
@@ -32,39 +34,45 @@ export function ProfileDropdown() {
       if (!res.ok) throw new Error("Reset failed");
       toast.success("Database reset successfully!");
       router.refresh();
-      // Optional: Redirect to dashboard or logout
     } catch {
       toast.error("Failed to reset database");
     }
   };
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/avatars/shadcn.jpg" alt="@shadcn" />
-            <AvatarFallback>EA</AvatarFallback>
+            <AvatarImage src={""} alt={user?.name} />
+            <AvatarFallback>
+              {user?.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Eagle</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              eagle@gmail.com
-            </p>
+      <DropdownMenuContent
+        className="min-w-56 rounded-lg"
+        side="bottom"
+        align="end"
+        sideOffset={8}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={""} alt={user?.name} />
+              <AvatarFallback className="rounded-lg">
+                {user?.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{user?.name}</span>
+              <span className="truncate text-xs">{user?.email}</span>
+            </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/settings">
-              <User />
-              Profile
-            </Link>
-          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/settings/notifications">
               <Bell />
@@ -79,12 +87,10 @@ export function ProfileDropdown() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleReset} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Reset Database
+        <DropdownMenuItem onClick={() => logout()}>
+          <LogOut />
+          Log out
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

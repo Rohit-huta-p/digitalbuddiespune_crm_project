@@ -160,9 +160,9 @@ export default function SettingsPage() {
           </Card>
 
           {/* Last login */}
-          <div className="mt-4 space-y-3">
-            <Card>
-              <CardContent>
+          <div className="mt-4">
+            <Card className="flex items-start justify-start h-full w-full">
+              <CardContent className="flex flex-col items-start justify-center text-center">
                 <div className="text-sm text-muted-foreground">Last login</div>
                 <div className="font-medium">
                   {(user as any)?.lastLogin

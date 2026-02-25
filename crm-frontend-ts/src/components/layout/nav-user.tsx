@@ -87,7 +87,7 @@ export function NavUser() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/settings/notifications">
+                <Link href="/settings">
                   <Settings />
                   Settings
                 </Link>
