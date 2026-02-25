@@ -10,12 +10,14 @@ export const taskSchema = z.object({
       message: "Invalid date format",
     })
     .optional(),
+  deadline: z.string().optional(),
   assignedTimestamp: z
     .string()
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "Invalid date format",
     })
     .optional(),
+  assignedAt: z.string().optional(),
   description: z.string(),
   taskName: z.string(),
   assignedToEmployeeId: z.array(z.number()),

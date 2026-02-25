@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 export async function POST(req: Request) {
   const cookieStore = cookies();
   const token = cookieStore.get("token")?.value;
-  const userId = cookieStore.get("id")?.value; // 👈 Fetch user ID from cookies
+  const userId = cookieStore.get("id")?.value;
 
   if (!token || !userId) {
     console.error("Missing token or user ID");
@@ -12,13 +12,36 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Fetch user details to determine role
+    const userRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/employee/get_employee_by_id`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id: userId }),
+      }
+    ).then((res) => res.json());
+    console.log("USER DATA: ", userRes.attributes);
+
+    const isEmployee =
+      userRes?.attributes?.role?.toLowerCase() === "employee";
+
     const url = new URL(req.url);
     const num = url.searchParams.get("num") || "1";
     const size = url.searchParams.get("size") || "10";
-    const status = url.searchParams.get("status"); // Extract status first
+    const status = url.searchParams.get("status");
+    const search = url.searchParams.get("search") || "";
+
+    // For employees, fetch ALL projects (large page) so we can filter by participation,
+    // then manually paginate. For admins/HR, use normal paginated request.
+    const fetchSize = isEmployee ? "1000" : size;
+    const fetchPage = isEmployee ? "0" : String(Number(num) - 1);
 
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project?page=${Number(num) - 1}&size=${size}${status ? `&status=${status}` : ''}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/project?page=${fetchPage}&size=${fetchSize}${status ? `&status=${status}` : ""}`,
       {
         method: "GET",
         headers: {
@@ -31,46 +54,58 @@ export async function POST(req: Request) {
     if (backendResponse.errors) {
       throw {
         title: "Error",
-        message: backendResponse.errors[0]?.message || "Failed to fetch projects",
-        status: backendResponse.errors[0]?.code
+        message:
+          backendResponse.errors[0]?.message || "Failed to fetch projects",
+        status: backendResponse.errors[0]?.code,
       };
     }
 
-    // Backend returns Page<ProjectDTO> in attributes or directly? 
-    // ResponseDTO<Page<ProjectDTO>> structure: { attributes: { content: [], totalElements: ... } }
-
-    // Check if backendResponse has attributes.content (Page object)
     const pageData = backendResponse.attributes;
-    const projects = pageData.content || [];
-    const _totalProjects = pageData.totalElements || 0;
+    let projects = pageData.content || [];
+    let totalProjects = pageData.totalElements || 0;
+    console.log("isEMPLOYEE: ", isEmployee);
 
-    // 🔍 Filter projects where user is a participant OR the creator (Frontend filtering might still be needed if backend doesn't filter by user permissions strictly for 'all' endpoint, but backend should handle this. keeping existing logic for safety if needed, but 'projects' comes from backend).
-    // The previous logic filtered `projects` array.
-    // Let's assume backend returns all visible projects.
-
-    let filteredProjects = projects;
-
-    // 🔎 Apply search filter (Frontend side as backend might not support search param yet based on controller code)
-    const search = url.searchParams.get("search") || "";
-    if (search) {
-      const q = search.toLowerCase();
-      filteredProjects = filteredProjects.filter(
-        (p: any) =>
-          p.name?.toLowerCase().includes(q) || // DTO has 'name', not 'projectName'
-          p.description?.toLowerCase().includes(q) // DTO has 'description', not 'projectDesc'
-      );
+    // Filter by participation for employees — only show projects where the
+    // employee is explicitly listed in the participants (team members) list.
+    if (isEmployee) {
+      projects = projects.filter((p: any) => {
+        if (p.participants) {
+          console.log("participant ID: ", String(p.participants.id));
+          console.log("userID: ", String(userId));
+          return p.participants?.find(
+            (participant: any) => String(participant.id) === String(userId)
+          );
+        }
+        return false;
+      });
+      totalProjects = projects.length;
     }
 
-    // Backend already handles status filter if passed.
+    // Apply search filter
+    if (search) {
+      const q = search.toLowerCase();
+      projects = projects.filter(
+        (p: any) =>
+          p.name?.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q)
+      );
+      totalProjects = projects.length;
+    }
+
+    // For employees, manually paginate after filtering
+    if (isEmployee) {
+      const pageNum = Number(num) - 1;
+      const pageSize = Number(size);
+      const start = pageNum * pageSize;
+      const end = start + pageSize;
+      projects = projects.slice(start, end);
+    }
 
     return NextResponse.json({
       success: true,
       message: "Projects fetched successfully",
-      projects: filteredProjects, // Note: DTO fields changed (name vs projectName), frontend components might break if not mapped back.
-      // Mapping DTO back to expected frontend structure if needed:
-      // ProjectDTO: name, description, status, companyId, createdBy, createdAt, clientId, clientName, groupLeaderIds, participants
-      // Old Frontend expected: projectName, projectDesc, ...
-      // Let's map it to be safe.
+      projects,
+      totalProjects,
     });
   } catch (error: any) {
     console.error("Unhandled error:", error);

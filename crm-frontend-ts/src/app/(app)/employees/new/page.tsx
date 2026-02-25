@@ -20,6 +20,7 @@ export default function AddEmployeeForm() {
     role: "", // 1 = Admin, 2 = HR, 3 = Employee
     password: "",
     monthlySalary: "",
+    commissionRate: "",
     hrId: "", // shown/required only when role === "2"
     designation: "",
   });
@@ -33,7 +34,9 @@ export default function AddEmployeeForm() {
       [name]:
         name === "monthlySalary" || name === "hrId"
           ? value.replace(/\D/g, "") // digits only
-          : value,
+          : name === "commissionRate"
+            ? value.replace(/[^0-9.]/g, "") // numbers and decimals
+            : value,
     }));
   };
   const handleSubmit = async (e: any) => {
@@ -59,6 +62,7 @@ export default function AddEmployeeForm() {
         ...formData,
         role: Number(formData.role), // convert string to number for API
         monthlySalary: String(Math.trunc(Number(formData.monthlySalary || 0))), // integer only
+        commissionRate: formData.commissionRate ? String(Number(formData.commissionRate)) : "0",
         ...(formData.role === "2" && formData.hrId?.trim() ? { hrId: formData.hrId.trim() } : { hrId: undefined }),
       };
 
@@ -183,9 +187,15 @@ export default function AddEmployeeForm() {
                   <Input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required />
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="monthlySalary">Monthly Salary</Label>
-                  <Input id="monthlySalary" name="monthlySalary" value={formData.monthlySalary} onChange={handleChange} required />
+                <div className="space-y-1.5 flex gap-2">
+                  <div className="w-1/2 space-y-1.5">
+                    <Label htmlFor="monthlySalary">Monthly Salary</Label>
+                    <Input id="monthlySalary" name="monthlySalary" value={formData.monthlySalary} onChange={handleChange} placeholder="Base Pay" required />
+                  </div>
+                  <div className="w-1/2 space-y-1.5">
+                    <Label htmlFor="commissionRate">Commission %</Label>
+                    <Input id="commissionRate" name="commissionRate" value={formData.commissionRate} onChange={handleChange} placeholder="e.g. 5.0" required />
+                  </div>
                 </div>
               </div>
             </div>

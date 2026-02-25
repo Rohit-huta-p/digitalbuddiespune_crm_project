@@ -16,6 +16,7 @@ export interface SelectItemOption<T extends string | number> {
 
 interface SelectDropdownProps<T extends string | number> {
   items: SelectItemOption<T>[];
+  value?: T;
   defaultValue?: T;
   placeholder?: string;
   onValueChange?: (_value: T) => void;
@@ -23,12 +24,14 @@ interface SelectDropdownProps<T extends string | number> {
 
 export function SelectDropdown<T extends string | number>({
   items,
+  value,
   defaultValue,
   placeholder,
   onValueChange,
 }: SelectDropdownProps<T>) {
   return (
     <Select
+      value={value !== undefined ? String(value) : undefined}
       defaultValue={defaultValue !== undefined ? String(defaultValue) : undefined}
       onValueChange={(value) =>
         onValueChange?.(

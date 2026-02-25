@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { IconUser, IconEdit } from "@tabler/icons-react";
+import { format } from "date-fns";
 
 const DESIGNATIONS = ["Frontend Dev", "Backend Dev", "Fullstack Dev", "DevOps", "QA"];
 
@@ -126,7 +127,7 @@ export default function SettingsPage() {
       toast.error("Unable to save preferences");
     }
   };
-
+  console.log("USER:", user)
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-semibold mb-6">Settings</h1>
@@ -158,11 +159,16 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Last login */}
           <div className="mt-4 space-y-3">
             <Card>
               <CardContent>
                 <div className="text-sm text-muted-foreground">Last login</div>
-                <div className="font-medium">{(user as any)?.lastLogin || "—"}</div>
+                <div className="font-medium">
+                  {(user as any)?.lastLogin
+                    ? format(new Date((user as any).lastLogin), "dd MMM yyyy (hh:mm a)")
+                    : "—"}
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -22,7 +22,7 @@ import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const DataTable = ({ data, loading }: any) => {
+const DataTable = ({ data, loading, onRowClick }: any) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const columns = useMemo(
     () => [
@@ -203,6 +203,72 @@ const DataTable = ({ data, loading }: any) => {
           <div className="pl-5">{row.getValue("serviceTitle")}</div>
         ),
       },
+      {
+        accessorKey: "taxAmount",
+        header: ({ column }: any) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Tax
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }: any) => (
+          <div className="pl-5 text-zinc-600">
+            {row.getValue("taxAmount") ? new Intl.NumberFormat("en-IN", {
+              style: "currency",
+              currency: "INR",
+            }).format(row.getValue("taxAmount")) : "-"}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "discountAmount",
+        header: ({ column }: any) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Discount
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }: any) => (
+          <div className="pl-5 text-red-500">
+            {row.getValue("discountAmount") ? new Intl.NumberFormat("en-IN", {
+              style: "currency",
+              currency: "INR",
+            }).format(row.getValue("discountAmount")) : "-"}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "paymentMethod",
+        header: ({ column }: any) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Payment
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }: any) => <div className="pl-5">{row.getValue("paymentMethod") || "-"}</div>,
+      },
+      {
+        accessorKey: "notes",
+        header: ({ column }: any) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Notes
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }: any) => <div className="pl-5 max-w-[150px] truncate" title={row.getValue("notes") || ""}>{row.getValue("notes") || "-"}</div>,
+      },
     ],
     []
   );
@@ -250,7 +316,11 @@ const DataTable = ({ data, loading }: any) => {
               console.log(row);
 
               return (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  onClick={() => onRowClick && onRowClick(row.original)}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(

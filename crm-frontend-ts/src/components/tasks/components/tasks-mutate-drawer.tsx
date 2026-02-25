@@ -55,7 +55,6 @@ const formSchema = z.object({
     errorMap: () => ({ message: "Invalid status value." }),
   }),
   assignedBy: z.string().min(1, "Assigned by is required."),
-  email: z.string().email("Invalid email format."),
   assignedToEmployeeId: z
     .array(z.number())
     .min(1, "At least one employee ID is required."),
@@ -94,7 +93,6 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
           : undefined,
         status: currentRow.status as "open" | "closed" | "pending", // Ensure correct enum type
         assignedBy: String(currentRow.assignedBy), // Convert assignedBy to string
-        email: currentRow.email ?? undefined,
         assignedToEmployeeId: currentRow.assignedToEmployeeId, // Ensure it's number[]
       }
       : {
@@ -103,7 +101,6 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
         deadlineTimestamp: new Date(),
         status: "open",
         assignedBy: user?.name || "",
-        email: user?.email || "",
         assignedToEmployeeId: [] as number[],
       },
   });
@@ -112,7 +109,6 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
   useEffect(() => {
     if (!isUpdate && user) {
       form.setValue("assignedBy", user.name);
-      form.setValue("email", user.email);
     }
   }, [user, isUpdate, form]);
 
@@ -261,6 +257,7 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
                 <FormItem className="space-y-1">
                   <FormLabel>Status</FormLabel>
                   <SelectDropdown
+                    value={field.value}
                     defaultValue={field.value}
                     onValueChange={field.onChange}
                     placeholder="Select a status"
@@ -289,27 +286,10 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter an email"
-                      type="email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="assignedToEmployeeId"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel>Employee ID</FormLabel>
+                  <FormLabel>Assign To</FormLabel>
                   <FormControl>
                     <MultiSelect
                       values={field.value.map(String)} // Convert numbers to strings

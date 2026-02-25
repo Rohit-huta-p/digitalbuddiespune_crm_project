@@ -37,7 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -132,13 +132,14 @@ export default function CreateTaskDialog({
               .toISOString()
               .slice(0, 19),
             priority: formData.priority,
-            assignedEmployees: formData.assignedToEmployeeId,
+            assignedEmployees: formData.assignedToEmployeeId.map(Number),
           },
         ],
       };
     } else {
       payload = {
         ...formData,
+        assignedToEmployeeId: formData.assignedToEmployeeId.map(Number),
         companyId: "1",
       };
     }
@@ -166,8 +167,8 @@ export default function CreateTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-zinc-900 dark:text-white text-xl font-semibold">
-            ➕ Schedule New Task
+          <DialogTitle className="text-zinc-900 dark:text-white text-xl font-semibold flex items-center">
+            <Plus className="mr-2" /> <span>Schedule New Task</span>
           </DialogTitle>
           <DialogDescription className="text-zinc-600 dark:text-zinc-400">
             Assign a task to selected team members.

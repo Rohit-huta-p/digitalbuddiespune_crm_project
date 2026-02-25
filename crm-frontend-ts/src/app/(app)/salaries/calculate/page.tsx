@@ -129,16 +129,28 @@ const CalculateSalaryPage = () => {
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
+                                    <Label className="text-muted-foreground">Base Salary</Label>
+                                    <p className="text-xl font-semibold">₹{result.baseSalary?.toFixed(2) || '0.00'}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Commission Earned</Label>
+                                    <p className="text-xl font-semibold text-blue-600">₹{result.commissionEarned?.toFixed(2) || '0.00'}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Gross Salary</Label>
+                                    <p className="text-xl font-semibold">₹{result.grossSalary?.toFixed(2) || '0.00'}</p>
+                                </div>
+                                <div>
                                     <Label className="text-muted-foreground">Tax Percentage</Label>
-                                    <p className="text-xl font-semibold">{result.taxPercentage}%</p>
+                                    <p className="text-xl font-semibold">{result.taxPercentage?.toFixed(2) || '0'}%</p>
                                 </div>
                                 <div>
                                     <Label className="text-muted-foreground">Tax Amount</Label>
-                                    <p className="text-xl font-semibold text-red-600">₹{result.taxAmount.toFixed(2)}</p>
+                                    <p className="text-xl font-semibold text-red-600">₹{result.taxAmount?.toFixed(2) || '0.00'}</p>
                                 </div>
                                 <div className="col-span-2 pt-4 border-t">
                                     <Label className="text-muted-foreground">Total Net Salary</Label>
-                                    <p className="text-3xl font-bold text-green-700 dark:text-green-400">₹{result.totalSalary.toFixed(2)}</p>
+                                    <p className="text-3xl font-bold text-green-700 dark:text-green-400">₹{result.netSalary?.toFixed(2) || result.totalSalary?.toFixed(2) || '0.00'}</p>
                                 </div>
                             </div>
                         </CardContent>

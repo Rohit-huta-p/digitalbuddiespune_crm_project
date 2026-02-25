@@ -17,10 +17,11 @@ interface SalaryRecord {
   employeeId: number;
   employeeName: string;
   month: string;
-  totalSalary: number;
+  totalSalary?: number; // legacy
+  grossSalary?: number;
   taxPercentage: number;
   taxAmount: number;
-  netSalary: number;
+  netSalary?: number;
   status: string;
   paidDate?: string;
 }
@@ -51,7 +52,7 @@ const SalariesPage = () => {
 
       const data = await res.json();
       // Adjust based on actual backend response structure
-      setSalaries(data.content || []);
+      setSalaries(data.salaryRecords || []);
       setTotalPages(data.totalPages || 0);
 
     } catch (err: any) {
@@ -166,7 +167,7 @@ const SalariesPage = () => {
                   <div className="flex flex-wrap items-center gap-4 text-sm md:text-base">
                     <div className="flex flex-col items-end md:items-start">
                       <p className="text-muted-foreground flex items-center gap-1">
-                        <Banknote className="w-4 h-4" /> Total: <span className="font-medium text-foreground">₹{salary.totalSalary?.toFixed(2)}</span>
+                        <Banknote className="w-4 h-4" /> Gross: <span className="font-medium text-foreground">₹{(salary.grossSalary ?? salary.totalSalary ?? 0).toFixed(2)}</span>
                       </p>
                       <p className="text-muted-foreground flex items-center gap-1">
                         <Percent className="w-4 h-4" /> Tax: <span className="font-medium text-foreground">{salary.taxPercentage}% (₹{(salary.taxAmount || 0).toFixed(2)})</span>
@@ -176,7 +177,7 @@ const SalariesPage = () => {
                       <p className="text-sm text-muted-foreground">Net Salary</p>
                       <p className="text-lg font-bold text-green-600 dark:text-green-500 flex items-center gap-1">
                         <ReceiptIndianRupee className="w-5 h-5" />
-                        ₹{(salary.totalSalary - (salary.taxAmount || 0)).toFixed(2)}
+                        ₹{(salary.netSalary ?? ((salary.totalSalary || 0) - (salary.taxAmount || 0))).toFixed(2)}
                       </p>
                     </div>
                   </div>

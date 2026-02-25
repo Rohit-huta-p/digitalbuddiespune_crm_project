@@ -16,7 +16,6 @@ import {
   Phone,
   Briefcase,
   Search,
-  MessageSquarePlus,
   History,
   Activity
 } from "lucide-react";
@@ -38,12 +37,10 @@ type SortField = "name" | "business" | "status" | "id";
 export default function LeadsList({
   onSelectLead: _onSelectLead,
   onViewFollowUps,
-  onAddFollowUp,
   onUpdateStatus,
 }: {
   onSelectLead?: (_id: number) => void;
   onViewFollowUps?: (_id: number) => void;
-  onAddFollowUp?: (_id: number) => void;
   onUpdateStatus?: (_id: number) => void;
 }) {
   const [loading, setLoading] = useState(false);
@@ -219,15 +216,6 @@ export default function LeadsList({
                     >
                       <History className="w-4 h-4 mr-1.5" />
                       Follow-ups
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size={isCompact ? "sm" : "default"}
-                      className="flex-1 lg:flex-none whitespace-nowrap"
-                      onClick={() => onAddFollowUp?.(lead.id)}
-                    >
-                      <MessageSquarePlus className="w-4 h-4 mr-1.5" />
-                      Log
                     </Button>
                     <Button
                       variant="default"

@@ -160,14 +160,16 @@ export function TasksTab({
                             </Button>
                         </div>
                     </div>
-                    <Button
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={() => setOpenTaskDialog(true)}
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        Add Task
-                    </Button>
+                    {user?.role?.toLowerCase() !== "employee" && (
+                        <Button
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => setOpenTaskDialog(true)}
+                        >
+                            <Plus className="h-3.5 w-3.5" />
+                            Add Task
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex-1 min-h-0 overflow-hidden">

@@ -9,6 +9,7 @@ export interface CreateEmployeeRequest {
   role: string;
   password: string;
   monthlySalary: string;
+  commissionRate?: string;
 }
 
 export async function POST(request: Request) {

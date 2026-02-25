@@ -19,6 +19,13 @@ const ClientTaskActions = dynamic(
   }
 );
 
+const ClientProjectActions = dynamic(
+  () => import("@/components/projects/client-project-actions"),
+  {
+    ssr: false,
+  }
+);
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = cookies();
   const defaultOpen = cookieStore.get("sidebar:state")?.value !== "false";
@@ -43,9 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="ml-auto flex items-center space-x-4">
               <div className="flex gap-2">
                 <ClientTaskActions />
-                <Link href="/projects/new">
-                  <Button className="space-x-1">Create Project</Button>
-                </Link>
+                <ClientProjectActions />
               </div>
               <ThemeSwitch />
               <ProfileDropdown />

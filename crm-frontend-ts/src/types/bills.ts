@@ -8,6 +8,11 @@ export interface CreateBillRequest {
   serviceDesc: string;
   bill_due_date?: string;
   invoiceNumber?: string;
+  taxAmount?: string;
+  discountAmount?: string;
+  paymentMethod?: string;
+  notes?: string;
+  billingAddress?: string;
 }
 
 export interface CreateBillResponse {

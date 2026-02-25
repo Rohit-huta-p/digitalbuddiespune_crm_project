@@ -9,6 +9,7 @@ import { ProjectSearchInput } from "./project-search-input";
 import { ProjectStatusFilter } from "./project-status-filter";
 import { ProjectListItem } from "./project-list-item";
 import { ProjectListSkeleton } from "./project-list-skeleton";
+import { useAuth } from "@/context/auth-context";
 
 interface ProjectListProps {
     projects: Project[];
@@ -40,6 +41,7 @@ export function ProjectList({
     onPageChange,
 }: ProjectListProps) {
     const router = useRouter();
+    const { user } = useAuth();
     const totalPages = Math.max(1, Math.ceil(totalProjects / pageSize));
 
     // Group projects by status
@@ -78,14 +80,16 @@ export function ProjectList({
                             {totalProjects} total
                         </p>
                     </div>
-                    <Button
-                        size="sm"
-                        className="h-8 gap-1"
-                        onClick={() => router.push("/projects/new")}
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        New
-                    </Button>
+                    {user?.role?.toLowerCase() !== "employee" && (
+                        <Button
+                            size="sm"
+                            className="h-8 gap-1"
+                            onClick={() => router.push("/projects/new")}
+                        >
+                            <Plus className="h-3.5 w-3.5" />
+                            New
+                        </Button>
+                    )}
                 </div>
                 <ProjectSearchInput onSearch={onSearchChange} defaultValue={search} />
                 <ProjectStatusFilter value={statusFilter} onChange={onStatusChange} />

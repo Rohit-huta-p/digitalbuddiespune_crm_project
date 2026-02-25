@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import CreateLeadPage from "@/components/leads/create-lead";
-import AddFollowUpPage from "@/components/leads/add-followup";
-import ViewFollowUpsPage from "@/components/leads/view-followups";
-import UpdateLeadStatusPage from "@/components/leads/update-status";
+import FollowUpsPage from "@/components/leads/follow-ups";
+import UpdateLeadPage from "@/components/leads/update-lead";
 import LeadsList from "@/components/leads/list";
 import { Main } from "@/components/layout/main";
 import { Button } from "@/components/ui/button";
@@ -61,31 +60,23 @@ export default function LeadsManagementPage() {
         <div className="w-full max-w-5xl mx-auto">
           {activePage === "create" && <CreateLeadPage />}
 
-          {activePage === "followup" && (
-            <AddFollowUpPage defaultLeadId={selectedLeadId ?? undefined} />
+          {activePage === "followups" && (
+            <FollowUpsPage defaultLeadId={selectedLeadId ?? undefined} />
           )}
 
-          {activePage === "view-followups" && (
-            <ViewFollowUpsPage defaultLeadId={selectedLeadId ?? undefined} />
-          )}
-
-          {activePage === "status" && (
-            <UpdateLeadStatusPage defaultLeadId={selectedLeadId ?? undefined} />
+          {activePage === "update" && (
+            <UpdateLeadPage defaultLeadId={selectedLeadId ?? undefined} />
           )}
 
           {activePage === "list" && (
             <LeadsList
               onViewFollowUps={(id) => {
                 setSelectedLeadId(id);
-                setActivePage("view-followups");
-              }}
-              onAddFollowUp={(id) => {
-                setSelectedLeadId(id);
-                setActivePage("followup");
+                setActivePage("followups");
               }}
               onUpdateStatus={(id) => {
                 setSelectedLeadId(id);
-                setActivePage("status");
+                setActivePage("update");
               }}
             />
           )}
