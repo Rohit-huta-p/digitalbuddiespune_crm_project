@@ -127,9 +127,10 @@ public class EmployeeController {
 
 		Map<String, Object> responseAttributes = new HashMap<>();
 		responseAttributes.put("name", employee.getName());
-		responseAttributes.put("phno", employee.getMobile());
+		responseAttributes.put("mobile", employee.getMobile());
 		responseAttributes.put("email", employee.getEmail());
 		responseAttributes.put("role", employee.getRoleDescription());
+		responseAttributes.put("designation", employee.getDesignation());
 		responseAttributes.put("password", employee.getPassword());
 		responseAttributes.put("hrId", employee.getHrId());
 		responseAttributes.put("employeeId", employee.getEmployeeId());
