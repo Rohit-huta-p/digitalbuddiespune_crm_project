@@ -150,6 +150,13 @@ public class TaskManagementService {
 			taskMap.put("assignedBy", task.getAssignedBy());
 			taskMap.put("priority", task.getPriority());
 			taskMap.put(Constants.COMPANY_ID, task.getCompanyId());
+
+			String assignedByName = java.util.Optional.ofNullable(task.getAssignedBy())
+					.flatMap(employeeRepo::findById)
+					.map(Employee::getName)
+					.orElse("Unknown");
+			taskMap.put("assignedByName", assignedByName);
+
 			// ✅ Return assigned employee IDs as a List instead of a String
 			List<Long> assignedEmployeeIds = task.getAssignedEmployees().stream().map(Employee::getId)
 					.collect(Collectors.toList());
@@ -409,6 +416,12 @@ public class TaskManagementService {
 			taskData.put("deadline", task.getDeadlineTimestamp());
 			taskData.put("assignedBy", task.getAssignedBy());
 			taskData.put("priority", task.getPriority());
+
+			String assignedByName = java.util.Optional.ofNullable(task.getAssignedBy())
+					.flatMap(employeeRepo::findById)
+					.map(Employee::getName)
+					.orElse("Unknown");
+			taskData.put("assignedByName", assignedByName);
 
 			// ✅ Include full assigned employee details
 			List<Map<String, Object>> assignedEmployeeDetails = task.getAssignedEmployees()

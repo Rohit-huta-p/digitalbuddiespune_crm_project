@@ -298,7 +298,7 @@ export default function TaskTable({
 
                       <div className="flex items-center gap-1.5">
                         <UserCheck className="h-3.5 w-3.5 text-muted-foreground/60" />
-                        <span>Assigned By: <span className="font-medium text-foreground/80">{getAssignedByLabel(task.assignedBy)}</span></span>
+                        <span>Assigned By: <span className="font-medium text-foreground/80">{task.assignedByName || getAssignedByLabel(task.assignedBy)}</span></span>
                       </div>
                     </div>
 

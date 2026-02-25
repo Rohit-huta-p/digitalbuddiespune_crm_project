@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const taskSchema = z.object({
   assignedBy: z.number(),
+  assignedByName: z.string().optional(),
   deadlineTimestamp: z
     .string()
     .refine((val) => !isNaN(Date.parse(val)), {

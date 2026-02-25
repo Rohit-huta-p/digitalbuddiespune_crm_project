@@ -1,13 +1,14 @@
 "use client";
 
-import { toast } from "@/hooks/use-toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { TasksImportDialog } from "./tasks-import-dialog";
 import { TasksMutateDrawer } from "./tasks-mutate-drawer";
 import { useTasks } from "../context/tasks-context";
+import axios from "axios";
+import { toast } from "sonner";
 
 export function TasksDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useTasks();
+  const { open, setOpen, currentRow, setCurrentRow, refreshTasks } = useTasks();
   return (
     <>
       <TasksMutateDrawer
@@ -46,21 +47,23 @@ export function TasksDialogs() {
                 setCurrentRow(null);
               }, 500);
             }}
-            handleConfirm={() => {
-              setOpen(null);
-              setTimeout(() => {
-                setCurrentRow(null);
-              }, 500);
-              toast({
-                title: "The following task has been deleted:",
-                description: (
-                  <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">
-                      {JSON.stringify(currentRow, null, 2)}
-                    </code>
-                  </pre>
-                ),
-              });
+            handleConfirm={async () => {
+              try {
+                const res = await axios.post("/api/delete-tasks", {
+                  id: currentRow.id,
+                });
+                if (res.data.error) throw res.data.error;
+                toast.success("Task deleted successfully!");
+              } catch (err: any) {
+                console.error("Delete task error:", err);
+                toast.error(err?.message || "Failed to delete task");
+              } finally {
+                setOpen(null);
+                setTimeout(() => {
+                  setCurrentRow(null);
+                }, 500);
+                refreshTasks();
+              }
             }}
             className="max-w-md"
             title={`Delete this task: ${currentRow.id} ?`}

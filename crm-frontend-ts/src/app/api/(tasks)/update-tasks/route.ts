@@ -21,9 +21,9 @@ export async function POST(request: Request) {
     const requestBody = { ...body };
 
     if (requestBody.deadlineTimestamp) {
-      requestBody.deadlineTimestamp = new Date(requestBody.deadlineTimestamp)
-        .toISOString()
-        .slice(0, 19);
+      const dl = new Date(requestBody.deadlineTimestamp);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      requestBody.deadlineTimestamp = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())}T${pad(dl.getHours())}:${pad(dl.getMinutes())}:${pad(dl.getSeconds())}`;
     }
 
     /* 

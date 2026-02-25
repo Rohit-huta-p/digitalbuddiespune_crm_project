@@ -27,9 +27,10 @@ export async function POST(request: Request) {
     );
 
     console.log(requestBody.deadlineTimestamp);
-    requestBody.deadlineTimestamp = new Date(requestBody.deadlineTimestamp)
-      .toISOString()
-      .slice(0, 19);
+    // Format as local datetime string (not UTC) since backend uses LocalDateTime.parse()
+    const dl = new Date(requestBody.deadlineTimestamp);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    requestBody.deadlineTimestamp = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())}T${pad(dl.getHours())}:${pad(dl.getMinutes())}:${pad(dl.getSeconds())}`;
 
     console.log(requestBody.deadlineTimestamp);
 
