@@ -245,6 +245,12 @@ public class Employee_Service {
         return repo.findById(id).orElseThrow(() -> new NotFoundException("Employee not found with id: " + id));
     }
 
+    public java.time.LocalDateTime getLastLoginTime(Long employeeId) {
+        Optional<com.crm.model.Attendance> top = attendanceRepository
+                .findTopByEmployeeIdAndCheckInIsNotNullOrderByCheckInDesc(employeeId);
+        return top.map(com.crm.model.Attendance::getCheckIn).orElse(null);
+    }
+
     public List<Employee> getAllEmployee(Map<String, ?> request) {
         Long companyId = basedCurrentUserProvider.getCurrentCompanyId();
 
@@ -305,6 +311,9 @@ public class Employee_Service {
         if (!employee.getPassword().equals(password)) {
             throw new InvalidCredentialsException("Invalid employee ID or password.");
         }
+
+        employee.setLastLogin(java.time.LocalDateTime.now());
+        repo.save(employee);
 
         return employee;
     }

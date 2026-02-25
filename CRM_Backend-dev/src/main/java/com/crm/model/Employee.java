@@ -20,8 +20,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
-
 @Entity
 @Table(name = "employee")
 @Component
@@ -39,38 +37,41 @@ public class Employee {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "mobile", unique=true, length = 10)
+    @Column(name = "mobile", unique = true, length = 10)
     private String mobile;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Column(name = "role", nullable = false)
-    private int role;			
+    private int role;
 
     @Column(name = "password", nullable = false)
     private String password;
-    
+
     @Column(name = "company_id", nullable = false)
     private Long companyId;
 
     @Column(name = "designation", nullable = false)
     private String designation;
 
-    //new
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
+    // new
     @ManyToMany(mappedBy = "assignedEmployees")
     @JsonIgnore
     private List<Task> tasks;
-    //new
-    
-//    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JsonIgnore
-//    private List<ProjectParticipant> projectParticipations;
-    
-    @Column(name="hr_Id",nullable=true,unique=false)
+    // new
+
+    // @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval =
+    // true)
+    // @JsonIgnore
+    // private List<ProjectParticipant> projectParticipations;
+
+    @Column(name = "hr_Id", nullable = true, unique = false)
     private Long hrId;
-    
-    
+
     public Employee() {
         super();
         this.employeeId = generateEmployeeId(id);
@@ -88,19 +89,23 @@ public class Employee {
         this.designation = designation;
     }
 
-
     private String generateEmployeeId(long id) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String timestamp = LocalDateTime.now().format(formatter);
         return "EMP" + timestamp + id;
     }
+
     @JsonProperty("roleDescription")
     public String getRoleDescription() {
         switch (this.role) {
-            case 1: return "Admin";
-            case 2: return "Hr";
-            case 3: return "Employee";
-            default: return "Unknown";
+            case 1:
+                return "Admin";
+            case 2:
+                return "Hr";
+            case 3:
+                return "Employee";
+            default:
+                return "Unknown";
         }
     }
 }

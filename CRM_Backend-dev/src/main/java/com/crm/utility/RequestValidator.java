@@ -291,12 +291,13 @@ public class RequestValidator {
 			throw new BadRequestException(key + " cannot be empty.");
 		}
 		for (Object obj : list) {
-			if (!(obj instanceof Integer)) {
-				throw new BadRequestException(key + " must be an array of integers.");
+			if (!(obj instanceof Number)) {
+				throw new BadRequestException(key + " must be an array of numbers.");
 			}
-			Integer employeeId = (Integer) obj;
+			Number employeeIdNum = (Number) obj;
+			long employeeId = employeeIdNum.longValue();
 			if (employeeId <= 0) {
-				throw new BadRequestException("Invalid employee ID in " + key + ": ID must be a positive integer.");
+				throw new BadRequestException("Invalid employee ID in " + key + ": ID must be a positive number.");
 			}
 		}
 

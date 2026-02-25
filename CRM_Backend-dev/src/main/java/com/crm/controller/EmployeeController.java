@@ -135,6 +135,23 @@ public class EmployeeController {
 		responseAttributes.put("employeeId", employee.getEmployeeId());
 		responseAttributes.put("companyId", employee.getCompanyId());
 		responseAttributes.put("id", employee.getId());
+
+		java.time.LocalDateTime attnCheckIn = emp_Service.getLastLoginTime(employee.getId());
+		java.time.LocalDateTime empLastLogin = employee.getLastLogin();
+		java.time.LocalDateTime latest = empLastLogin;
+
+		if (attnCheckIn != null && (latest == null || attnCheckIn.isAfter(latest))) {
+			latest = attnCheckIn;
+		}
+
+		if (latest != null) {
+			java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
+					.ofPattern("yyyy-MM-dd HH:mm:ss");
+			responseAttributes.put("lastLogin", latest.format(formatter));
+		} else {
+			responseAttributes.put("lastLogin", null);
+		}
+
 		ResponseDTO<Map<String, Object>> responseDTO = new ResponseDTO<>();
 		responseDTO.setAttributes(responseAttributes);
 
