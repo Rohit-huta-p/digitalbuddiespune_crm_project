@@ -191,7 +191,7 @@ const ProjectsIndividualView = ({ params }: { params: { view: string } }) => {
   };
 
   const formatDate = (dateStr: string | undefined) =>
-    dateStr ? new Date(dateStr).toLocaleString() : "N/A";
+    dateStr ? new Date(dateStr).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "N/A";
 
   return (
     <TasksProvider refreshTasks={loadAll}>

@@ -166,7 +166,7 @@ export default function SettingsPage() {
                 <div className="text-sm text-muted-foreground">Last login</div>
                 <div className="font-medium">
                   {(user as any)?.lastLogin
-                    ? format(new Date((user as any).lastLogin), "dd MMM yyyy (hh:mm a)")
+                    ? `${new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" }).format(new Date((user as any).lastLogin))} (${new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true }).format(new Date((user as any).lastLogin))})`
                     : "—"}
                 </div>
               </CardContent>

@@ -308,8 +308,8 @@ export default function FollowUpsPage({ defaultLeadId }: { defaultLeadId?: numbe
                                                 <div className="flex items-center gap-1.5">
                                                     <CalendarDays className="w-3.5 h-3.5" />
                                                     <span className="uppercase tracking-wider">Scheduled:</span>
-                                                    <span className="text-foreground">{new Date(followUp.callTime).toLocaleString(undefined, {
-                                                        weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                    <span className="text-foreground">{new Date(followUp.callTime).toLocaleString("en-IN", {
+                                                        timeZone: "Asia/Kolkata", weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                                                     })}</span>
                                                 </div>
 

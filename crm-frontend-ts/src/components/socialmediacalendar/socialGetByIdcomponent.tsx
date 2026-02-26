@@ -144,7 +144,7 @@ export default function SocialViewPage() {
                 </div>
                 <div className="space-y-1">
                   <span className="font-semibold text-gray-500 block">Scheduled At</span>
-                  <span>{data.scheduledAt ? new Date(data.scheduledAt).toLocaleString() : 'N/A'}</span>
+                  <span>{data.scheduledAt ? new Date(data.scheduledAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : 'N/A'}</span>
                 </div>
                 <div className="space-y-1">
                   <span className="font-semibold text-gray-500 block">Color Format</span>
@@ -180,7 +180,7 @@ export default function SocialViewPage() {
 
               <div className="text-xs text-muted-foreground pt-4 border-t mt-4 flex justify-between">
                 <span>Created By: {data.createdBy}</span>
-                <span>Created At: {data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A'}</span>
+                <span>Created At: {data.createdAt ? new Date(data.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" }) : 'N/A'}</span>
               </div>
 
             </div>

@@ -38,9 +38,10 @@ function formatDeadline(dateStr?: string) {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const day = date.toLocaleString("default", { day: "numeric" });
-  const month = date.toLocaleString("default", { month: "short" });
-  const time = date.toLocaleString("default", {
+  const day = date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric" });
+  const month = date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", month: "short" });
+  const time = date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
     hour: "numeric",
     minute: "2-digit",
   });

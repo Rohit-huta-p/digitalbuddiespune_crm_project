@@ -145,7 +145,7 @@ export default function SocialListByClientPage() {
 
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-600 mt-2">
                     <p><span className="font-semibold">Media:</span> {item.mediaType}</p>
-                    <p><span className="font-semibold">Scheduled:</span> {item.scheduledAt ? new Date(item.scheduledAt).toLocaleString() : 'N/A'}</p>
+                    <p><span className="font-semibold">Scheduled:</span> {item.scheduledAt ? new Date(item.scheduledAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : 'N/A'}</p>
 
                     {item.notes && (
                       <p className="col-span-2 mt-2 bg-white p-2 rounded border text-xs italic">

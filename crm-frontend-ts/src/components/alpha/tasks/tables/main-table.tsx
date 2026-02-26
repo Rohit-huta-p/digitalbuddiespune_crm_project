@@ -127,9 +127,10 @@ export default function MainTable({
           const tomorrow = new Date(today);
           tomorrow.setDate(tomorrow.getDate() + 1);
 
-          const day = date.toLocaleString("default", { day: "numeric" });
-          const month = date.toLocaleString("default", { month: "long" });
-          const time = date.toLocaleString("default", {
+          const day = date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric" });
+          const month = date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", month: "long" });
+          const time = date.toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
             hour: "numeric",
             minute: "2-digit",
           });
@@ -171,10 +172,10 @@ export default function MainTable({
           return (
             <div
               className={`px-2 py-1 rounded-full text-sm font-medium text-center ${status === "open"
-                  ? "bg-blue-900/25 text-blue-300 border border-blue-900"
-                  : status === "pending"
-                    ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
-                    : "bg-green-900/25 text-green-300 border border-green-900"
+                ? "bg-blue-900/25 text-blue-300 border border-blue-900"
+                : status === "pending"
+                  ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
+                  : "bg-green-900/25 text-green-300 border border-green-900"
                 }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -191,10 +192,10 @@ export default function MainTable({
           return (
             <div
               className={`px-2 py-1 rounded-full text-sm font-medium text-center ${priority === "high"
-                  ? "bg-red-900/25 text-red-500 font-bold border border-red-900"
-                  : priority === "medium"
-                    ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
-                    : "bg-green-900/25 text-green-300 border border-green-900"
+                ? "bg-red-900/25 text-red-500 font-bold border border-red-900"
+                : priority === "medium"
+                  ? "bg-yellow-900/25 text-yellow-300 border border-yellow-900"
+                  : "bg-green-900/25 text-green-300 border border-green-900"
                 }`}
             >
               {priority === "-"

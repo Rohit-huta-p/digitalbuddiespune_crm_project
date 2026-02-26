@@ -85,8 +85,8 @@ export const columns: ColumnDef<Task>[] = [
               (row.getValue("status") as string) == "open"
                 ? "text-green-500 text-md"
                 : (row.getValue("status") as string) == "pending"
-                ? "text-blue-500 text-md"
-                : "text-red-500 text-md"
+                  ? "text-blue-500 text-md"
+                  : "text-red-500 text-md"
             }
           >
             {(row.getValue("status") as string).charAt(0).toUpperCase() +
@@ -118,8 +118,8 @@ export const columns: ColumnDef<Task>[] = [
         return null;
       }
 
-      const date = dayjs(assignedAt);
-      if (!date.isValid()) {
+      const date = new Date(assignedAt);
+      if (isNaN(date.getTime())) {
         return null;
       }
 
@@ -132,7 +132,15 @@ export const columns: ColumnDef<Task>[] = [
             opacity: row.getValue("status") === "closed" ? 0.5 : 1,
           }}
         >
-          {date.format("DD/MM/YYYY HH:mm")}
+          {date.toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }).replace(',', '')}
         </div>
       );
     },

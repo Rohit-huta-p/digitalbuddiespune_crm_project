@@ -86,7 +86,7 @@ export default function UnifiedAttendancePage() {
     } else if (localStatus === "completed" && start && end) {
       setStatus("completed");
       setWorkedTime(formatWorkHours(start, end, true));
-      setLogoutTime(new Date(end).toLocaleString());
+      setLogoutTime(new Date(end).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }));
       setIsPresent(false);
     }
 
@@ -229,7 +229,7 @@ export default function UnifiedAttendancePage() {
         }
         localStorage.setItem("attendanceEndTime", now);
         localStorage.setItem("attendanceStatus", "completed");
-        setLogoutTime(new Date(now).toLocaleString());
+        setLogoutTime(new Date(now).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }));
         setStatus("completed");
         setIsPresent(false);
 
